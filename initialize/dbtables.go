@@ -10,7 +10,7 @@ import (
 func DBTables() {
 	global.GDB.AutoMigrate(&entity.MUser{})
 	u := entity.MUser{
-		UserName: "admin",
+		Account:  "admin",
 		Password: "123456",
 		Role:     entity.Admin,
 	}

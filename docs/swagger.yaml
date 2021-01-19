@@ -1,25 +1,32 @@
 basePath: /
 definitions:
-  request.RegisterData:
+  request.LoginData:
     properties:
-      email:
+      account:
         type: string
       password:
         type: string
-      username:
+    required:
+    - account
+    - password
+    type: object
+  request.LoginTicketData:
+    properties:
+      authorization:
+        type: string
+      url:
         type: string
     required:
-    - email
-    - password
-    - username
+    - authorization
+    - url
     type: object
-  response.Response:
+  response.LoginRes:
     properties:
-      code:
+      id:
         type: integer
-      data:
-        type: object
-      msg:
+      role:
+        type: integer
+      token:
         type: string
     type: object
 info:
@@ -30,25 +37,46 @@ info:
   title: buaashow
   version: "1.0"
 paths:
-  /user/register:
+  /user/login:
     post:
       consumes:
       - application/json
       parameters:
-      - description: Add account
+      - description: 账号密码
         in: body
-        name: register
+        name: logindata
         required: true
         schema:
-          $ref: '#/definitions/request.RegisterData'
+          $ref: '#/definitions/request.LoginData'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.Response'
-      summary: 用户注册
+            $ref: '#/definitions/response.LoginRes'
+      summary: 使用账号密码登录
+      tags:
+      - User
+  /user/verify:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 云平台返回的ticket
+        in: body
+        name: ticket
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginTicketData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginRes'
+      summary: 使用云平台登录
       tags:
       - User
 swagger: "2.0"

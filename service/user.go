@@ -1,10 +1,10 @@
 package service
 
 import (
-	"errors"
 	"buaashow/global"
 	"buaashow/model/entity"
 	"buaashow/utils"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -13,7 +13,7 @@ import (
 func Register(u *entity.MUser) error {
 	u.Password = utils.AesEncrypt(u.Password)
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
-		result := tx.Where("user_name = ?", u.UserName).First(u)
+		result := tx.Where("account = ?", u.Account).First(u)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return tx.Create(u).Error
 		}
@@ -23,7 +23,7 @@ func Register(u *entity.MUser) error {
 
 //Login 用户登录
 func Login(u *entity.MUser) bool {
-	result := global.GDB.Where("user_name = ? AND password = ?", u.UserName, utils.AesEncrypt(u.Password)).First(u)
+	result := global.GDB.Where("account = ? AND password = ?", u.Account, utils.AesEncrypt(u.Password)).First(u)
 	return !errors.Is(result.Error, gorm.ErrRecordNotFound)
 }
 
@@ -31,6 +31,13 @@ func Login(u *entity.MUser) bool {
 func GetUserInfoByID(id uint) (*entity.MUser, error) {
 	var u entity.MUser
 	err := global.GDB.First(&u, id).Error
+	return &u, err
+}
+
+// GetUserInfoByAccount 获取用户信息
+func GetUserInfoByAccount(account string) (*entity.MUser, error) {
+	var u entity.MUser
+	err := global.GDB.Where("account = ?", account).First(&u).Error
 	return &u, err
 }
 

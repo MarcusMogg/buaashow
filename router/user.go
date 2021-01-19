@@ -11,8 +11,8 @@ import (
 func InitUserRouter(Router *gin.RouterGroup) {
 	UserRouter := Router.Group("user")
 	{
-		UserRouter.POST("register", api.Register)
-		UserRouter.POST("login", api.Login)
+		UserRouter.POST("login", api.LoginByPwd)
+		UserRouter.POST("verify", api.LoginByTicket)
 		UserRouter.GET("userinfo", middleware.JWTAuth(), api.GetUserInfo)
 		UserRouter.GET("info", api.GetUserInfoByID)
 	}

@@ -2,10 +2,11 @@ package config
 
 // Config 所有配置
 type Config struct {
-	AesKey string `json:"aeskey" yaml:"aeskey"`
-	JWTKey string `json:"jwtkey" yaml:"jwtkey"`
-	Port   int    `json:"port"   yaml:"port"`
-	Mysql  Mysql  `json:"mysql"  yaml:"mysql"`
+	AesKey    string `json:"aeskey" yaml:"aeskey"`
+	JWTKey    string `json:"jwtkey" yaml:"jwtkey"`
+	Port      int    `json:"port"   yaml:"port"`
+	Mysql     Mysql  `json:"mysql"  yaml:"mysql"`
+	SSOServer string `json:"sso"    yaml:"sso"`
 }
 
 // Mysql 连接配置

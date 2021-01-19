@@ -1,11 +1,15 @@
 package api
 
 import (
+	"buaashow/global"
 	"buaashow/middleware"
 	"buaashow/model/entity"
 	"buaashow/model/request"
 	"buaashow/model/response"
 	"buaashow/service"
+	"buaashow/utils"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -15,41 +19,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Register gdoc
+// LoginByPwd gdoc
 // @Tags User
-// @Summary 用户注册
+// @Summary 使用账号密码登录
 // @accept application/json
 // @Produce application/json
-// @Param register body request.RegisterData true "Add account"
-// @Success 200 {string} string "{"code":1,"data":{},"msg":"注册成功"}"
-// @Router /user/register [post]
-func Register(c *gin.Context) {
-	var r request.RegisterData
-	if err := c.BindJSON(&r); err == nil {
-		user := &entity.MUser{
-			UserName: r.UserName,
-			Email:    r.Email,
-			Password: r.Password,
-			Role:     entity.Student,
-			NickName: r.UserName,
-		}
-
-		if err = service.Register(user); err == nil {
-			response.OkWithMessage("注册成功", c)
-		} else {
-			response.FailWithMessage(fmt.Sprintf("%v", err), c)
-		}
-
-	} else {
-		response.FailValidate(c)
-	}
-}
-
-// Login 用户登录
-func Login(c *gin.Context) {
+// @Param logindata body request.LoginData true "账号密码"
+// @Success 200 {object} response.LoginRes
+// @Router /user/login [post]
+func LoginByPwd(c *gin.Context) {
 	var r request.LoginData
 	if err := c.BindJSON(&r); err == nil {
-		user := &entity.MUser{UserName: r.UserName, Password: r.Password}
+		user := &entity.MUser{Account: r.Account, Password: r.Password}
 
 		if service.Login(user) {
 			tokenNext(c, user)
@@ -62,24 +43,26 @@ func Login(c *gin.Context) {
 	}
 }
 
-func tokenNext(c *gin.Context, u *entity.MUser) {
-	j := middleware.NewJWT()
-	claim := middleware.JWTClaim{
-		UserID:   u.ID,
-		UserName: u.UserName,
-		Role:     u.Role,
-		StandardClaims: jwt.StandardClaims{
-			NotBefore: time.Now().Unix() - 100,
-			ExpiresAt: time.Now().Unix() + 60*60*24*7,
-			Issuer:    "715worker",
-		},
+// LoginByTicket gdoc
+// @Tags User
+// @Summary 使用云平台登录
+// @accept application/json
+// @Produce application/json
+// @Param ticket body request.LoginTicketData true "云平台返回的ticket"
+// @Success 200 {object} response.LoginRes
+// @Router /user/verify [post]
+func LoginByTicket(c *gin.Context) {
+	var r request.LoginTicketData
+	if err := c.BindJSON(&r); err == nil {
+		user, err := ticketVerify(r.Authorization, r.ServiceURL)
+		if err != nil {
+			response.FailWithMessage(err.Error(), c)
+		}
+
+		tokenNext(c, user)
+	} else {
+		response.FailValidate(c)
 	}
-	token, err := j.CreateToken(claim)
-	if err != nil {
-		response.FailWithMessage("token创建失败", c)
-		return
-	}
-	response.OkWithData(token, c)
 }
 
 // GetUserInfo 获取用户信息
@@ -106,4 +89,58 @@ func GetUserInfoByID(c *gin.Context) {
 	} else {
 		response.Fail(c)
 	}
+}
+
+func tokenNext(c *gin.Context, u *entity.MUser) {
+	j := middleware.NewJWT()
+	claim := middleware.JWTClaim{
+		UserID:   u.ID,
+		UserName: u.Account,
+		Role:     u.Role,
+		StandardClaims: jwt.StandardClaims{
+			NotBefore: time.Now().Unix() - 100,
+			ExpiresAt: time.Now().Unix() + 60*60*24*7,
+			Issuer:    "715worker",
+		},
+	}
+	token, err := j.CreateToken(claim)
+	if err != nil {
+		response.FailWithMessage("token创建失败", c)
+		return
+	}
+	response.OkWithData(response.LoginRes{
+		ID:    u.ID,
+		Role:  int(u.Role),
+		Token: token,
+	}, c)
+}
+
+func ticketVerify(ticket string, serviceURL string) (user *entity.MUser, err error) {
+	str := []byte(ticket)
+	i := len(str) - 1
+	for ; i >= 0; i-- {
+		if str[i] != '#' {
+			break
+		}
+	}
+	str = str[0 : i+1]
+	data := fmt.Sprintf("token=%s&service=%s", str, serviceURL)
+	resp, err := utils.Post(global.GConfig.SSOServer, "application/x-www-form-urlencoded", data)
+	if err != nil {
+		return
+	}
+	var res response.TicketRes
+	json.Unmarshal(resp, &res)
+	if res.Code != 1003 {
+		err = errors.New(res.Msg)
+		return
+	}
+	user, err = service.GetUserInfoByAccount(res.Data.ID)
+	if err != nil {
+		return
+	}
+	if user.Role != entity.Role(res.Data.Role) {
+		err = errors.New("角色不匹配")
+	}
+	return
 }

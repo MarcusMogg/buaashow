@@ -11,7 +11,7 @@
     },
     "basePath": "/",
     "paths": {
-        "/user/register": {
+        "/user/login": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -22,15 +22,15 @@
                 "tags": [
                     "User"
                 ],
-                "summary": "用户注册",
+                "summary": "使用账号密码登录",
                 "parameters": [
                     {
-                        "description": "Add account",
-                        "name": "register",
+                        "description": "账号密码",
+                        "name": "logindata",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.RegisterData"
+                            "$ref": "#/definitions/request.LoginData"
                         }
                     }
                 ],
@@ -38,7 +38,40 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "$ref": "#/definitions/response.LoginRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/verify": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "使用云平台登录",
+                "parameters": [
+                    {
+                        "description": "云平台返回的ticket",
+                        "name": "ticket",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.LoginTicketData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginRes"
                         }
                     }
                 }
@@ -46,35 +79,46 @@
         }
     },
     "definitions": {
-        "request.RegisterData": {
+        "request.LoginData": {
             "type": "object",
             "required": [
-                "email",
-                "password",
-                "username"
+                "account",
+                "password"
             ],
             "properties": {
-                "email": {
+                "account": {
                     "type": "string"
                 },
                 "password": {
                     "type": "string"
+                }
+            }
+        },
+        "request.LoginTicketData": {
+            "type": "object",
+            "required": [
+                "authorization",
+                "url"
+            ],
+            "properties": {
+                "authorization": {
+                    "type": "string"
                 },
-                "username": {
+                "url": {
                     "type": "string"
                 }
             }
         },
-        "response.Response": {
+        "response.LoginRes": {
             "type": "object",
             "properties": {
-                "code": {
+                "id": {
                     "type": "integer"
                 },
-                "data": {
-                    "type": "object"
+                "role": {
+                    "type": "integer"
                 },
-                "msg": {
+                "token": {
                     "type": "string"
                 }
             }
