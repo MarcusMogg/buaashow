@@ -1,0 +1,13 @@
+# 用户密码加密用
+aeskey : "sadasdasdsxcsa42" # 长度必须为16, 24或者32
+# jwt token加密用
+jwtkey : "sfsrwewcweafa,sf" # 长度必须为16, 24或者32
+# 端口
+port : 1234
+# 数据库连接
+mysql:
+    username: root
+    password: 'rott@123'
+    path: '127.0.0.1:3306'
+    dbname: 'paas'
+    parm: 'charset=utf8&parseTime=True&loc=Local'

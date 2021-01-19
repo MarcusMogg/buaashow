@@ -1,0 +1,54 @@
+basePath: /
+definitions:
+  request.RegisterData:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data:
+        type: object
+      msg:
+        type: string
+    type: object
+info:
+  contact:
+    name: Mogg
+    url: https://github.com/MarcusMogg
+  description: buaashow is a sample RESTful api server.
+  title: buaashow
+  version: "1.0"
+paths:
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Add account
+        in: body
+        name: register
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 用户注册
+      tags:
+      - User
+swagger: "2.0"
