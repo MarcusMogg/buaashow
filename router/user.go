@@ -13,7 +13,10 @@ func InitUserRouter(Router *gin.RouterGroup) {
 	{
 		UserRouter.POST("login", api.LoginByPwd)
 		UserRouter.POST("verify", api.LoginByTicket)
-		UserRouter.GET("userinfo", middleware.JWTAuth(), api.GetUserInfo)
-		UserRouter.GET("info", api.GetUserInfoByID)
+		UserRouter.POST("email", middleware.JWTAuth(1), api.UpdateEmail)
+		UserRouter.POST("password", middleware.JWTAuth(1), api.UpdatePassword)
+
+		UserRouter.GET("info", middleware.JWTAuth(1), api.GetUserInfo)
+		UserRouter.GET("info/:id", api.GetUserInfoByID)
 	}
 }

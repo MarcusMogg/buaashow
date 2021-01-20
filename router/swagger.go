@@ -1,6 +1,7 @@
 package router
 
 import (
+	// fow gin-swagger
 	_ "buaashow/docs"
 
 	"github.com/gin-gonic/gin"

@@ -1,9 +1,15 @@
 package response
 
-// LoginRes response data when login success
-type LoginRes struct {
+// UserInfoRes common user info
+type UserInfoRes struct {
 	ID    uint   `json:"id"`
 	Role  int    `json:"role"`
+	Email string `json:"email"`
+}
+
+// LoginRes response data when login success
+type LoginRes struct {
+	UserInfoRes
 	Token string `json:"token"`
 }
 

@@ -65,29 +65,105 @@ func LoginByTicket(c *gin.Context) {
 	}
 }
 
-// GetUserInfo 获取用户信息
+// GetUserInfo gdoc
+// @Tags User
+// @Summary 获取当前用户信息
+// @Produce application/json
+// @Success 200 {object} response.UserInfoRes
+// @Router /user/info [get]
 func GetUserInfo(c *gin.Context) {
 	claim, ok := c.Get("user")
 	if !ok {
 		response.FailWithMessage("未通过jwt认证", c)
 		return
 	}
-	user := claim.(*entity.MUser)
-	response.OkWithData(user, c)
+	u := claim.(*entity.MUser)
+	response.OkWithData(response.UserInfoRes{
+		ID:    u.ID,
+		Role:  int(u.Role),
+		Email: u.Email,
+	}, c)
 }
 
-// GetUserInfoByID 获取指定用户信息
+// GetUserInfoByID gdoc
+// @Tags User
+// @Summary 获取指定id的用户信息
+// @Accept  json
+// @Produce  json
+// @Param id path int true "User ID"
+// @Success 200 {object} response.UserInfoRes
+// @Router /user/info/{id} [get]
 func GetUserInfoByID(c *gin.Context) {
-	id, err := strconv.Atoi(c.Query("id"))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		response.FailWithMessage("参数错误", c)
 		return
 	}
 	u, err := service.GetUserInfoByID(uint(id))
 	if err == nil {
-		response.OkWithData(u, c)
+		response.OkWithData(response.UserInfoRes{
+			ID:    u.ID,
+			Role:  int(u.Role),
+			Email: u.Email,
+		}, c)
 	} else {
 		response.Fail(c)
+	}
+}
+
+// UpdateEmail gdoc
+// @Tags User
+// @Summary 修改邮箱
+// @accept application/json
+// @Produce application/json
+// @Param ticket body request.EmailData true "新邮箱"
+// @Success 200 {object} response.LoginRes
+// @Router /user/email [post]
+func UpdateEmail(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	var email request.EmailData
+	if err := c.BindJSON(&email); err == nil {
+		err = service.UpdateEmail(u, email.Email)
+		if err != nil {
+			response.FailWithMessage(err.Error(), c)
+		} else {
+			response.Ok(c)
+		}
+	} else {
+		response.FailValidate(c)
+	}
+}
+
+// UpdatePassword gdoc
+// @Tags User
+// @Summary 修改密码
+// @accept application/json
+// @Produce application/json
+// @Param ticket body request.PasswordData true "新旧密码"
+// @Success 200 {object} response.LoginRes
+// @Router /user/password [post]
+func UpdatePassword(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	var pass request.PasswordData
+	if err := c.BindJSON(&pass); err == nil {
+		err = service.UpdatePassword(u, pass.OldPassword, pass.NewPassword)
+		if err != nil {
+			response.FailWithMessage(err.Error(), c)
+		} else {
+			response.Ok(c)
+		}
+	} else {
+		response.FailValidate(c)
 	}
 }
 
@@ -100,7 +176,7 @@ func tokenNext(c *gin.Context, u *entity.MUser) {
 		StandardClaims: jwt.StandardClaims{
 			NotBefore: time.Now().Unix() - 100,
 			ExpiresAt: time.Now().Unix() + 60*60*24*7,
-			Issuer:    "715worker",
+			Issuer:    "Mogg",
 		},
 	}
 	token, err := j.CreateToken(claim)
@@ -109,8 +185,11 @@ func tokenNext(c *gin.Context, u *entity.MUser) {
 		return
 	}
 	response.OkWithData(response.LoginRes{
-		ID:    u.ID,
-		Role:  int(u.Role),
+		UserInfoRes: response.UserInfoRes{
+			ID:    u.ID,
+			Role:  int(u.Role),
+			Email: u.Email,
+		},
 		Token: token,
 	}, c)
 }

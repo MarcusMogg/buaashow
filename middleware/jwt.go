@@ -66,7 +66,7 @@ func (j *JWT) ParseToken(tokenString string) (*JWTClaim, error) {
 }
 
 // JWTAuth 身份验证中间件
-func JWTAuth() gin.HandlerFunc {
+func JWTAuth(minRole int) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
 		jwt := NewJWT()
@@ -79,6 +79,11 @@ func JWTAuth() gin.HandlerFunc {
 		u, err := service.GetUserInfoByID(claim.UserID)
 		if err != nil {
 			response.FailToken(c)
+			c.Abort()
+			return
+		}
+		if int(u.Role) < minRole {
+			response.FailAuth(c)
 			c.Abort()
 			return
 		}

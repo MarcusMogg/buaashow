@@ -18,10 +18,12 @@ const (
 	SUCCESS = 1
 	// ERROR 操作失败默认返回码
 	ERROR = 7
-	//ValidateError 验证失败返回码
+	//ValidateError 参数验证失败返回码
 	ValidateError = 8
 	//TokenError token错误返回码
 	TokenError = 9
+	//AuthError 权限不足
+	AuthError = 10
 )
 
 // Result 将结果以json的形式输出至响应
@@ -76,4 +78,9 @@ func FailValidate(c *gin.Context) {
 // FailToken token错误
 func FailToken(c *gin.Context) {
 	FailDetailed(TokenError, map[string]interface{}{}, "token错误", c)
+}
+
+// FailAuth 权限不足
+func FailAuth(c *gin.Context) {
+	FailDetailed(AuthError, map[string]interface{}{}, "权限不足", c)
 }

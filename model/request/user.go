@@ -11,3 +11,14 @@ type LoginTicketData struct {
 	Authorization string `form:"authorization" json:"authorization" binding:"required"`
 	ServiceURL    string `form:"url" json:"url" binding:"required"`
 }
+
+// EmailData for update email
+type EmailData struct {
+	Email string `form:"email" json:"email" binding:"required"`
+}
+
+// PasswordData for update password
+type PasswordData struct {
+	OldPassword string `form:"old" json:"old" binding:"required"`
+	NewPassword string `form:"new" json:"new" binding:"required"`
+}

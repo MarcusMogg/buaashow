@@ -45,3 +45,23 @@ func GetUserInfoByAccount(account string) (*entity.MUser, error) {
 func UpdateUser(user *entity.MUser) error {
 	return global.GDB.Save(user).Error
 }
+
+// UpdateEmail 修改邮箱
+func UpdateEmail(user *entity.MUser, email string) error {
+	return global.GDB.Transaction(func(tx *gorm.DB) error {
+		return tx.Model(&user).Update("email", email).Error
+	})
+}
+
+// UpdatePassword 修改密码
+func UpdatePassword(user *entity.MUser, oldPassword, newPassword string) error {
+	oldPassword = utils.AesEncrypt(oldPassword)
+	newPassword = utils.AesEncrypt(newPassword)
+	return global.GDB.Transaction(func(tx *gorm.DB) error {
+		result := global.GDB.Where("account = ? AND password = ?", user.Account, oldPassword).First(user)
+		if result.Error != nil {
+			return errors.New("密码错误")
+		}
+		return tx.Model(user).Update("password", newPassword).Error
+	})
+}
