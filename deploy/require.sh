@@ -26,3 +26,13 @@ then
 else
     echo "gogogo"
 fi
+
+if ! program_exists mysql
+then
+    apt install mysql-server mysql-client
+    if ! program_exists mysql
+    then
+        echo "mysql install error"
+        exit 1
+    fi
+fi
