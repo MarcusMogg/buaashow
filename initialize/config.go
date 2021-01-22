@@ -2,7 +2,6 @@ package initialize
 
 import (
 	"buaashow/global"
-	"fmt"
 
 	"go.uber.org/zap"
 
@@ -17,7 +16,7 @@ func config() {
 	v.SetConfigName(defaultConfigFile)
 	v.AddConfigPath(".")
 	if err := v.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s", err))
+		zap.S().Fatalf("Fatal error config file: %s", err)
 	}
 	v.WatchConfig()
 
@@ -31,7 +30,7 @@ func config() {
 	if err := v.Unmarshal(&global.GConfig); err != nil {
 		zap.S().Error(err)
 	}
-	zap.S().Info(global.GConfig)
+	zap.S().Debug(global.GConfig)
 	global.GVP = v
 }
 

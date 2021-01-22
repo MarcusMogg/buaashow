@@ -14,11 +14,11 @@ type LoginTicketData struct {
 
 // EmailData for update email
 type EmailData struct {
-	Email string `form:"email" json:"email" binding:"required"`
+	Email string `form:"email" json:"email" binding:"required,email"`
 }
 
 // PasswordData for update password
 type PasswordData struct {
 	OldPassword string `form:"old" json:"old" binding:"required"`
-	NewPassword string `form:"new" json:"new" binding:"required"`
+	NewPassword string `form:"new" json:"new" binding:"required,gte=4,lse=16,asciiprint"`
 }

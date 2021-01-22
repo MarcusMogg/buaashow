@@ -39,13 +39,16 @@ go build -o buaashow ../main.go;
 # 拷贝配置文件
 cp $cfgfile ./config.yaml
 # 删除以前的进程
-pid_running=$(cat cur)
-echo "last time run pid $pid_running"
-
-if pid_exists $pid_running
+if [ -f cur ]
 then
-    echo "kill last time running"
-    kill -9 $pid_running
+    pid_running=$(cat cur)
+    echo "last time run pid $pid_running"
+
+    if pid_exists $pid_running
+    then
+        echo "kill last time running"
+        kill -9 $pid_running
+    fi
 fi
 # 重新运行
 nohup ./buaashow > xx.log 2>&1 & echo $! > cur

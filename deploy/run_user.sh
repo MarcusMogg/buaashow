@@ -8,7 +8,7 @@ password=$(perl -e 'print crypt($ARGV[0], "password")' "rott@123")
 # 运行脚本
 runsh="$PWD/run.sh"
 cfgfile="$PWD/../config.yaml"
-worker_home="/home/$worker/"
+worker_home="/home/$worker"
 
 # 判断用户是否存在
 user_exists() {
