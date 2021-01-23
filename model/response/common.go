@@ -15,15 +15,15 @@ type Response struct {
 
 const (
 	// SUCCESS 操作成功默认返回码
-	SUCCESS = 1
+	SUCCESS = 200
 	// ERROR 操作失败默认返回码
-	ERROR = 7
+	ERROR = 100
 	//ValidateError 参数验证失败返回码
-	ValidateError = 8
+	ValidateError = 102
 	//TokenError token错误返回码
-	TokenError = 9
+	TokenError = 103
 	//AuthError 权限不足
-	AuthError = 10
+	AuthError = 104
 )
 
 // Result 将结果以json的形式输出至响应

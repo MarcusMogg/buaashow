@@ -31,7 +31,7 @@ func LoginByPwd(c *gin.Context) {
 	var r request.LoginData
 	if err := c.BindJSON(&r); err == nil {
 		user := &entity.MUser{Account: r.Account, Password: r.Password}
-
+		// TODO: Use verification code when login
 		if service.Login(user) {
 			tokenNext(c, user)
 		} else {
@@ -121,6 +121,7 @@ func GetUserInfoByID(c *gin.Context) {
 // @Router /user/email [post]
 func UpdateEmail(c *gin.Context) {
 	claim, ok := c.Get("user")
+	//FIXME: 中间件信息是否需要验证
 	if !ok {
 		response.FailWithMessage("未通过jwt认证", c)
 		return
