@@ -6,11 +6,21 @@ import (
 	"gorm.io/gorm"
 )
 
+// Term 学期
+// Season 0 春 1 夏 2 秋
+type Term struct {
+	Year   int `json:"year"`
+	Season int `json:"season"`
+}
+
 // Course 课程信息
+// Name-{Year}年-{Senson}学期
 // TODO: More course content
 type Course struct {
 	gorm.Model
+	Name string
 	Info string
+	Term
 }
 
 // CourseStudents 课程与学生关联表

@@ -1,15 +1,13 @@
 package global
 
 import (
-	"buaashow/config"
-
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
 var (
 	// GConfig 全局配置内容
-	GConfig config.Config
+	GConfig Config
 	// GVP 读取配置
 	GVP *viper.Viper
 	// GDB 数据库连接

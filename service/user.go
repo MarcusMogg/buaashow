@@ -1,8 +1,8 @@
 package service
 
 import (
+	"buaashow/entity"
 	"buaashow/global"
-	"buaashow/model/entity"
 	"buaashow/utils"
 	"errors"
 

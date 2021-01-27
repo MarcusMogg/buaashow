@@ -1,24 +1,49 @@
-package api
+package course
 
 import (
+	"buaashow/entity"
+	"buaashow/response"
+	"buaashow/service"
+	"fmt"
+
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // CreateTeacher gdoc
 // @Tags course
-// @Summary 创建教师账号 仅管理员
+// @Summary 创建教师账号 需管理员登录
 // @accept application/json
 // @Produce application/json
-// @Param logindata body request.LoginData true "账号密码"
-// @Success 200 {object} response.LoginRes
+// @Param logindata body RegisterData true "账号密码必选，邮箱可选"
 // @Router /course/teacher [post]
 func CreateTeacher(c *gin.Context) {
+	var r RegisterData
+	if err := c.BindJSON(&r); err == nil {
+
+		user := &entity.MUser{
+			Account:  r.Account,
+			Password: r.Password,
+			Role:     entity.Teacher,
+		}
+		if err = service.Register(user); err == nil {
+			response.OkWithMessage("注册成功", c)
+			zap.S().Infof("Register Teacher %s", user.Account)
+		} else {
+			response.FailWithMessage(fmt.Sprintf("%v", err), c)
+			zap.S().Debug(err)
+		}
+
+	} else {
+		response.FailValidate(c)
+		zap.S().Debug(err)
+	}
 
 }
 
 // CreateCourse gdoc
 // @Tags course
-// @Summary 创建课程 仅教师
+// @Summary 创建课程 需教师登录
 // @accept application/json
 // @Produce application/json
 // @Param logindata body request.LoginData true "账号密码"

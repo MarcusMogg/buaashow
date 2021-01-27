@@ -1,4 +1,4 @@
-package router
+package swagger
 
 import (
 	// fow gin-swagger
@@ -9,7 +9,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-//InitSwaggerRouter 初始化gin swagger
-func InitSwaggerRouter(Router *gin.RouterGroup) {
+//InitRouter 初始化gin swagger
+func InitRouter(Router *gin.RouterGroup) {
 	Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

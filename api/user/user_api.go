@@ -1,11 +1,10 @@
-package api
+package user
 
 import (
+	"buaashow/entity"
 	"buaashow/global"
 	"buaashow/middleware"
-	"buaashow/model/entity"
-	"buaashow/model/request"
-	"buaashow/model/response"
+	"buaashow/response"
 	"buaashow/service"
 	"buaashow/utils"
 	"encoding/json"
@@ -24,11 +23,11 @@ import (
 // @Summary 使用账号密码登录
 // @accept application/json
 // @Produce application/json
-// @Param logindata body request.LoginData true "账号密码"
+// @Param logindata body LoginData true "账号密码"
 // @Success 200 {object} response.LoginRes
 // @Router /user/login [post]
 func LoginByPwd(c *gin.Context) {
-	var r request.LoginData
+	var r LoginData
 	if err := c.BindJSON(&r); err == nil {
 		user := &entity.MUser{Account: r.Account, Password: r.Password}
 		// TODO: Use verification code when login
@@ -48,11 +47,11 @@ func LoginByPwd(c *gin.Context) {
 // @Summary 使用云平台登录
 // @accept application/json
 // @Produce application/json
-// @Param ticket body request.LoginTicketData true "云平台返回的ticket"
+// @Param ticket body LoginTicketData true "云平台返回的ticket"
 // @Success 200 {object} response.LoginRes
 // @Router /user/verify [post]
 func LoginByTicket(c *gin.Context) {
-	var r request.LoginTicketData
+	var r LoginTicketData
 	if err := c.BindJSON(&r); err == nil {
 		user, err := ticketVerify(r.Authorization, r.ServiceURL)
 		if err != nil {
@@ -67,7 +66,7 @@ func LoginByTicket(c *gin.Context) {
 
 // GetUserInfo gdoc
 // @Tags User
-// @Summary 获取当前用户信息
+// @Summary 获取当前用户信息，需用户登录
 // @Produce application/json
 // @Success 200 {object} response.UserInfoRes
 // @Router /user/info [get]
@@ -78,7 +77,7 @@ func GetUserInfo(c *gin.Context) {
 		return
 	}
 	u := claim.(*entity.MUser)
-	response.OkWithData(response.UserInfoRes{
+	response.OkWithData(InfoRes{
 		ID:    u.ID,
 		Role:  int(u.Role),
 		Email: u.Email,
@@ -101,7 +100,7 @@ func GetUserInfoByID(c *gin.Context) {
 	}
 	u, err := service.GetUserInfoByID(uint(id))
 	if err == nil {
-		response.OkWithData(response.UserInfoRes{
+		response.OkWithData(InfoRes{
 			ID:    u.ID,
 			Role:  int(u.Role),
 			Email: u.Email,
@@ -113,10 +112,10 @@ func GetUserInfoByID(c *gin.Context) {
 
 // UpdateEmail gdoc
 // @Tags User
-// @Summary 修改邮箱
+// @Summary 修改邮箱, 需用户登录
 // @accept application/json
 // @Produce application/json
-// @Param ticket body request.EmailData true "新邮箱"
+// @Param ticket body EmailData true "新邮箱"
 // @Success 200 {object} response.LoginRes
 // @Router /user/email [post]
 func UpdateEmail(c *gin.Context) {
@@ -127,7 +126,7 @@ func UpdateEmail(c *gin.Context) {
 		return
 	}
 	u := claim.(*entity.MUser)
-	var email request.EmailData
+	var email EmailData
 	if err := c.BindJSON(&email); err == nil {
 		err = service.UpdateEmail(u, email.Email)
 		if err != nil {
@@ -142,10 +141,10 @@ func UpdateEmail(c *gin.Context) {
 
 // UpdatePassword gdoc
 // @Tags User
-// @Summary 修改密码
+// @Summary 修改密码, 需用户登录
 // @accept application/json
 // @Produce application/json
-// @Param ticket body request.PasswordData true "新旧密码"
+// @Param ticket body PasswordData true "新旧密码"
 // @Success 200 {object} response.LoginRes
 // @Router /user/password [post]
 func UpdatePassword(c *gin.Context) {
@@ -155,7 +154,7 @@ func UpdatePassword(c *gin.Context) {
 		return
 	}
 	u := claim.(*entity.MUser)
-	var pass request.PasswordData
+	var pass PasswordData
 	if err := c.BindJSON(&pass); err == nil {
 		err = service.UpdatePassword(u, pass.OldPassword, pass.NewPassword)
 		if err != nil {
@@ -185,8 +184,8 @@ func tokenNext(c *gin.Context, u *entity.MUser) {
 		response.FailWithMessage("token创建失败", c)
 		return
 	}
-	response.OkWithData(response.LoginRes{
-		UserInfoRes: response.UserInfoRes{
+	response.OkWithData(LoginRes{
+		InfoRes: InfoRes{
 			ID:    u.ID,
 			Role:  int(u.Role),
 			Email: u.Email,
@@ -209,7 +208,7 @@ func ticketVerify(ticket string, serviceURL string) (user *entity.MUser, err err
 	if err != nil {
 		return
 	}
-	var res response.TicketRes
+	var res TicketRes
 	json.Unmarshal(resp, &res)
 	if res.Code != 1003 {
 		err = errors.New(res.Msg)

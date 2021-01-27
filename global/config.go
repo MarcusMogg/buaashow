@@ -1,4 +1,4 @@
-package config
+package global
 
 // Config 所有配置
 type Config struct {

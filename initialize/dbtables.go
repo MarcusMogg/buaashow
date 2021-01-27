@@ -1,8 +1,8 @@
 package initialize
 
 import (
+	"buaashow/entity"
 	"buaashow/global"
-	"buaashow/model/entity"
 	"buaashow/service"
 )
 

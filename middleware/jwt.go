@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"buaashow/entity"
 	"buaashow/global"
-	"buaashow/model/entity"
-	"buaashow/model/response"
+	"buaashow/response"
 	"buaashow/service"
 	"errors"
 

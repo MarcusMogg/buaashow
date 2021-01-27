@@ -1,8 +1,10 @@
 package initialize
 
 import (
+	"buaashow/api/course"
+	"buaashow/api/swagger"
+	"buaashow/api/user"
 	"buaashow/middleware"
-	"buaashow/router"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,8 +17,9 @@ func Router() *gin.Engine {
 
 	Router.Use(middleware.Cors()) // 跨域
 
-	router.InitSwaggerRouter(APIGroup)
-	router.InitUserRouter(APIGroup)
+	user.InitRouter(APIGroup)
+	course.InitRouter(APIGroup)
+	swagger.InitRouter(APIGroup)
 
 	return Router
 }

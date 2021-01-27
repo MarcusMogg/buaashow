@@ -1,4 +1,4 @@
-package request
+package user
 
 // LoginData 账号密码登录时传入参数
 type LoginData struct {

@@ -1,7 +1,7 @@
-package response
+package user
 
-// UserInfoRes common user info
-type UserInfoRes struct {
+// InfoRes common user info
+type InfoRes struct {
 	ID    uint   `json:"id"`
 	Role  int    `json:"role"`
 	Email string `json:"email"`
@@ -9,7 +9,7 @@ type UserInfoRes struct {
 
 // LoginRes response data when login success
 type LoginRes struct {
-	UserInfoRes
+	InfoRes
 	Token string `json:"token"`
 }
 
