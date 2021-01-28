@@ -1,20 +1,17 @@
 package user
 
-// InfoRes common user info
-type InfoRes struct {
-	ID    uint   `json:"id"`
-	Role  int    `json:"role"`
-	Email string `json:"email"`
-}
+import (
+	"buaashow/entity"
+)
 
 // LoginRes response data when login success
-type LoginRes struct {
-	InfoRes
+type loginRes struct {
+	entity.UserInfoRes
 	Token string `json:"token"`
 }
 
 // TicketRes sso response
-type TicketRes struct {
+type ticketRes struct {
 	Code int    `json:"code"`
 	Msg  string `json:"msg"`
 	Data struct {

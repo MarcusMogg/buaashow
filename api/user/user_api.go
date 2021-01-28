@@ -2,20 +2,12 @@ package user
 
 import (
 	"buaashow/entity"
-	"buaashow/global"
-	"buaashow/middleware"
 	"buaashow/response"
 	"buaashow/service"
-	"buaashow/utils"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"strconv"
-	"time"
-
-	"github.com/dgrijalva/jwt-go"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // LoginByPwd gdoc
@@ -23,11 +15,11 @@ import (
 // @Summary 使用账号密码登录
 // @accept application/json
 // @Produce application/json
-// @Param logindata body LoginData true "账号密码"
-// @Success 200 {object} response.LoginRes
+// @Param logindata body loginData true "账号密码"
+// @Success 200 {object} loginRes
 // @Router /user/login [post]
 func LoginByPwd(c *gin.Context) {
-	var r LoginData
+	var r loginData
 	if err := c.BindJSON(&r); err == nil {
 		user := &entity.MUser{Account: r.Account, Password: r.Password}
 		// TODO: Use verification code when login
@@ -47,11 +39,11 @@ func LoginByPwd(c *gin.Context) {
 // @Summary 使用云平台登录
 // @accept application/json
 // @Produce application/json
-// @Param ticket body LoginTicketData true "云平台返回的ticket"
-// @Success 200 {object} response.LoginRes
+// @Param ticket body loginTicketData true "云平台返回的ticket"
+// @Success 200 {object} loginRes
 // @Router /user/verify [post]
 func LoginByTicket(c *gin.Context) {
-	var r LoginTicketData
+	var r loginTicketData
 	if err := c.BindJSON(&r); err == nil {
 		user, err := ticketVerify(r.Authorization, r.ServiceURL)
 		if err != nil {
@@ -68,7 +60,7 @@ func LoginByTicket(c *gin.Context) {
 // @Tags User
 // @Summary 获取当前用户信息，需用户登录
 // @Produce application/json
-// @Success 200 {object} response.UserInfoRes
+// @Success 200 {object} entity.UserInfoRes
 // @Router /user/info [get]
 func GetUserInfo(c *gin.Context) {
 	claim, ok := c.Get("user")
@@ -77,10 +69,11 @@ func GetUserInfo(c *gin.Context) {
 		return
 	}
 	u := claim.(*entity.MUser)
-	response.OkWithData(InfoRes{
+	response.OkWithData(entity.UserInfoRes{
 		ID:    u.ID,
 		Role:  int(u.Role),
 		Email: u.Email,
+		Name:  u.Name,
 	}, c)
 }
 
@@ -90,19 +83,20 @@ func GetUserInfo(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param id path int true "User ID"
-// @Success 200 {object} response.UserInfoRes
+// @Success 200 {object} entity.UserInfoRes
 // @Router /user/info/{id} [get]
 func GetUserInfoByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		response.FailWithMessage("参数错误", c)
+		response.FailValidate(c)
 		return
 	}
 	u, err := service.GetUserInfoByID(uint(id))
 	if err == nil {
-		response.OkWithData(InfoRes{
+		response.OkWithData(entity.UserInfoRes{
 			ID:    u.ID,
 			Role:  int(u.Role),
+			Name:  u.Name,
 			Email: u.Email,
 		}, c)
 	} else {
@@ -115,8 +109,8 @@ func GetUserInfoByID(c *gin.Context) {
 // @Summary 修改邮箱, 需用户登录
 // @accept application/json
 // @Produce application/json
-// @Param ticket body EmailData true "新邮箱"
-// @Success 200 {object} response.LoginRes
+// @Param ticket body emailData true "新邮箱"
+// @Success 200 {object} loginRes
 // @Router /user/email [post]
 func UpdateEmail(c *gin.Context) {
 	claim, ok := c.Get("user")
@@ -126,7 +120,7 @@ func UpdateEmail(c *gin.Context) {
 		return
 	}
 	u := claim.(*entity.MUser)
-	var email EmailData
+	var email emailData
 	if err := c.BindJSON(&email); err == nil {
 		err = service.UpdateEmail(u, email.Email)
 		if err != nil {
@@ -144,8 +138,8 @@ func UpdateEmail(c *gin.Context) {
 // @Summary 修改密码, 需用户登录
 // @accept application/json
 // @Produce application/json
-// @Param ticket body PasswordData true "新旧密码"
-// @Success 200 {object} response.LoginRes
+// @Param ticket body passwordData true "新旧密码"
+// @Success 200 {object} loginRes
 // @Router /user/password [post]
 func UpdatePassword(c *gin.Context) {
 	claim, ok := c.Get("user")
@@ -154,7 +148,7 @@ func UpdatePassword(c *gin.Context) {
 		return
 	}
 	u := claim.(*entity.MUser)
-	var pass PasswordData
+	var pass passwordData
 	if err := c.BindJSON(&pass); err == nil {
 		err = service.UpdatePassword(u, pass.OldPassword, pass.NewPassword)
 		if err != nil {
@@ -167,59 +161,33 @@ func UpdatePassword(c *gin.Context) {
 	}
 }
 
-func tokenNext(c *gin.Context, u *entity.MUser) {
-	j := middleware.NewJWT()
-	claim := middleware.JWTClaim{
-		UserID:   u.ID,
-		UserName: u.Account,
-		Role:     u.Role,
-		StandardClaims: jwt.StandardClaims{
-			NotBefore: time.Now().Unix() - 100,
-			ExpiresAt: time.Now().Unix() + 60*60*24*7,
-			Issuer:    "Mogg",
-		},
-	}
-	token, err := j.CreateToken(claim)
-	if err != nil {
-		response.FailWithMessage("token创建失败", c)
-		return
-	}
-	response.OkWithData(LoginRes{
-		InfoRes: InfoRes{
-			ID:    u.ID,
-			Role:  int(u.Role),
-			Email: u.Email,
-		},
-		Token: token,
-	}, c)
-}
+// CreateTeacher gdoc
+// @Tags user
+// @Summary 创建教师账号 需管理员登录
+// @accept application/json
+// @Produce application/json
+// @Param logindata body registerData true "账号密码必选，邮箱可选"
+// @Router /user/teacher [post]
+func CreateTeacher(c *gin.Context) {
+	var r registerData
+	if err := c.BindJSON(&r); err == nil {
 
-func ticketVerify(ticket string, serviceURL string) (user *entity.MUser, err error) {
-	str := []byte(ticket)
-	i := len(str) - 1
-	for ; i >= 0; i-- {
-		if str[i] != '#' {
-			break
+		user := &entity.MUser{
+			Account:  r.Account,
+			Password: r.Password,
+			Role:     entity.Teacher,
 		}
+		if err = service.Register(user); err == nil {
+			response.OkWithMessage("注册成功", c)
+			zap.S().Infof("Register Teacher %s", user.Account)
+		} else {
+			response.FailWithMessage(err.Error(), c)
+			zap.S().Debug(err.Error())
+		}
+
+	} else {
+		response.FailValidate(c)
+		zap.S().Debug(err.Error())
 	}
-	str = str[0 : i+1]
-	data := fmt.Sprintf("token=%s&service=%s", str, serviceURL)
-	resp, err := utils.Post(global.GConfig.SSOServer, "application/x-www-form-urlencoded", data)
-	if err != nil {
-		return
-	}
-	var res TicketRes
-	json.Unmarshal(resp, &res)
-	if res.Code != 1003 {
-		err = errors.New(res.Msg)
-		return
-	}
-	user, err = service.GetUserInfoByAccount(res.Data.ID)
-	if err != nil {
-		return
-	}
-	if user.Role != entity.Role(res.Data.Role) {
-		err = errors.New("角色不匹配")
-	}
-	return
+
 }

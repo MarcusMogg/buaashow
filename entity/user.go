@@ -6,6 +6,7 @@ import "gorm.io/gorm"
 type MUser struct {
 	gorm.Model
 	Account  string `gorm:"not null;unique"`
+	Name     string
 	Email    string
 	Password string `gorm:"not null" json:"-"`
 	Role     Role
@@ -22,3 +23,11 @@ const (
 	// Admin 管理员
 	Admin
 )
+
+// UserInfoRes common user info
+type UserInfoRes struct {
+	ID    uint   `json:"id"`
+	Role  int    `json:"role"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}

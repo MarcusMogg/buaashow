@@ -9,22 +9,30 @@ import (
 // Term 学期
 // Season 0 春 1 夏 2 秋
 type Term struct {
-	Year   int `json:"year"`
-	Season int `json:"season"`
+	Year   int `json:"year" binding:"gte=2020"`
+	Season int `json:"season" binding:"gte=0,lte=2"`
 }
 
-// Course 课程信息
+// MCourse 课程信息
 // Name-{Year}年-{Senson}学期
 // TODO: More course content
-type Course struct {
+type MCourse struct {
 	gorm.Model
 	Name string
 	Info string
 	Term
 }
 
-// CourseStudents 课程与学生关联表
-type CourseStudents struct {
+// CourseResp 接口返回的课程信息
+type CourseResp struct {
+	ID   uint   `json:"cid"`
+	Name string `json:"name" binding:"require,gte=4,lte=32"`
+	Info string `json:"info"`
+	Term
+}
+
+// RCourseStudent 课程与学生关联表
+type RCourseStudent struct {
 	CourseID  uint `gorm:"primarykey"`
 	UserID    uint `gorm:"primarykey"`
 	Auth      CourseAuth

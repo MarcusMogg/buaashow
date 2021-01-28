@@ -13,7 +13,10 @@ func DBTables() {
 		Account:  global.GConfig.Admin.Username,
 		Password: global.GConfig.Admin.Password,
 		Role:     entity.Admin,
+		Name:     "ADMIN",
 	}
 	service.Register(&u)
 
+	global.GDB.AutoMigrate(&entity.MCourse{})
+	global.GDB.AutoMigrate(&entity.RCourseStudent{})
 }

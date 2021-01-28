@@ -1,7 +1,15 @@
 package course
 
-// RegisterData only admin regist teachers
-type RegisterData struct {
-	Account  string `form:"account" json:"account" binding:"required,gte=4"`
-	Password string `form:"password" json:"password" binding:"required,gte=4,lte=16,ascii"`
+import "buaashow/entity"
+
+// for create course
+type courseData struct {
+	Name string `json:"name" binding:"require,gte=4,lte=32"`
+	Info string `json:"info"`
+	entity.Term
+}
+
+type studentsData struct {
+	Accounts []string `json:"accounts" binding:"require,ascii"`
+	Names    []string `json:"names" binding:"require"`
 }

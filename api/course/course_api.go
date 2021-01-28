@@ -4,72 +4,196 @@ import (
 	"buaashow/entity"
 	"buaashow/response"
 	"buaashow/service"
-	"fmt"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
-
-// CreateTeacher gdoc
-// @Tags course
-// @Summary 创建教师账号 需管理员登录
-// @accept application/json
-// @Produce application/json
-// @Param logindata body RegisterData true "账号密码必选，邮箱可选"
-// @Router /course/teacher [post]
-func CreateTeacher(c *gin.Context) {
-	var r RegisterData
-	if err := c.BindJSON(&r); err == nil {
-
-		user := &entity.MUser{
-			Account:  r.Account,
-			Password: r.Password,
-			Role:     entity.Teacher,
-		}
-		if err = service.Register(user); err == nil {
-			response.OkWithMessage("注册成功", c)
-			zap.S().Infof("Register Teacher %s", user.Account)
-		} else {
-			response.FailWithMessage(fmt.Sprintf("%v", err), c)
-			zap.S().Debug(err)
-		}
-
-	} else {
-		response.FailValidate(c)
-		zap.S().Debug(err)
-	}
-
-}
 
 // CreateCourse gdoc
 // @Tags course
 // @Summary 创建课程 需教师登录
 // @accept application/json
 // @Produce application/json
-// @Param logindata body request.LoginData true "账号密码"
-// @Success 200 {object} response.LoginRes
+// @Param coursedata body courseData true "课程信息"
+// @Success 200 {object} entity.CourseResp
 // @Router /course [post]
 func CreateCourse(c *gin.Context) {
-
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	var req courseData
+	if err := c.ShouldBindJSON(&req); err == nil {
+		course := entity.MCourse{
+			Term: req.Term,
+			Name: req.Name,
+			Info: req.Info,
+		}
+		if err = service.CreateCourse(&course, u); err == nil {
+			response.OkWithData(entity.CourseResp{
+				ID:   course.ID,
+				Term: req.Term,
+				Name: req.Name,
+				Info: req.Info,
+			}, c)
+		} else {
+			response.FailWithMessage(err.Error(), c)
+		}
+	} else {
+		response.FailValidate(c)
+		zap.S().Debug(err)
+	}
 }
 
 // GetMyCourses gdoc
 // @Tags course
-// @Summary 获取与当前用户相关的课程(教师创建、学生加入)
+// @Summary 获取与当前用户相关的课程(教师创建、学生加入) 需用户登录
 // @accept application/json
 // @Produce application/json
-// @Param logindata body request.LoginData true "账号密码"
-// @Success 200 {object} response.LoginRes
+// @Success 200 {array} entity.CourseResp
 // @Router /course [get]
 func GetMyCourses(c *gin.Context) {
-
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	courses := service.GetMyCourses(u)
+	response.OkWithData(courses, c)
 }
 
 // GetCourseInfo gdoc
 // @Tags course
-// @Summary 获取课程信息, 当前用户需要与课程相关
+// @Summary 获取课程信息, 需用户登录，当前用户需要与课程相关
 // @Produce application/json
-// @Success 200 {object} response.LoginRes
+// @Param id path int true "Course ID"
+// @Success 200 {object} entity.CourseResp
 // @Router /course/{id} [get]
 func GetCourseInfo(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	res, err := service.GetCourseInfoByID(uint(id))
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.OkWithData(res, c)
+	}
+}
+
+// CreateStudents gdoc
+// @Tags course
+// @Summary 导入学生, 需用户登录，当前用户有课程管理权限
+// @Produce application/json
+// @Param id path int true "Course ID"
+// @Param accounts body studentsData true "学生账号"
+// @Success 200 {object} studentsData
+// @Router /course/{id}/students [post]
+func CreateStudents(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	cid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	var req studentsData
+	if err := c.BindJSON(&req); err == nil {
+		fails, err := service.CreateStudentsToCourse(req.Accounts, req.Names, uint(cid), u.ID)
+		if err != nil {
+			response.FailWithMessage(err.Error(), c)
+		} else {
+			response.OkWithData(fails, c)
+		}
+	} else {
+		response.FailValidate(c)
+		zap.S().Debug(err)
+	}
+}
+
+// GetStudents gdoc
+// @Tags course
+// @Summary 查看课程学生列表
+// @Produce application/json
+// @Param id path int true "Course ID"
+// @Success 200 {array} entity.UserInfoRes
+// @Router /course/{id}/students [get]
+func GetStudents(c *gin.Context) {
+	cid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	response.OkWithData(service.GetStudentsInCourse(uint(cid)), c)
+}
+
+// DeleteStudent gdoc
+// @Tags course
+// @Summary 删除学生,需用户登录，当前用户有课程管理权限
+// @Produce application/json
+// @Param cid path int true "Course ID"
+// @Param uid path int true "Student ID"
+// @Success 200
+// @Router /course/{cid}/student/{uid} [delete]
+func DeleteStudent(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	cid, err := strconv.ParseUint(c.Param("cid"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	uid, err := strconv.ParseUint(c.Param("uid"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	err = service.DeleteStudent(uint(cid), uint(uid), u)
+	if err != nil {
+		response.Ok(c)
+	} else {
+		response.FailWithMessage(err.Error(), c)
+	}
+}
+
+// DeleteCourse gdoc
+// @Tags course
+// @Summary 删除学生,需用户登录，当前用户需要是课程创建者
+// @Produce application/json
+// @Param cid path int true "Course ID"
+// @Success 200
+// @Router /course/{cid} [delete]
+func DeleteCourse(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	cid, err := strconv.ParseUint(c.Param("cid"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+
+	err = service.DeleteCourse(uint(cid), u)
+	if err != nil {
+		response.Ok(c)
+	} else {
+		response.FailWithMessage(err.Error(), c)
+	}
 }

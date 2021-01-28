@@ -1,5 +1,7 @@
 package service
 
+// table m_users;
+
 import (
 	"buaashow/entity"
 	"buaashow/global"

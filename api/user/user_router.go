@@ -18,5 +18,7 @@ func InitRouter(Router *gin.RouterGroup) {
 
 		UserRouter.GET("info", middleware.JWTAuth(entity.Student), GetUserInfo)
 		UserRouter.GET("info/:id", GetUserInfoByID)
+
+		UserRouter.POST("teacher", middleware.JWTAuth(entity.Admin), CreateTeacher)
 	}
 }
