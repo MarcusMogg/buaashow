@@ -26,7 +26,7 @@ func Register(u *entity.MUser) error {
 //Login 用户登录
 func Login(u *entity.MUser) bool {
 	result := global.GDB.Where("account = ? AND password = ?", u.Account, utils.AesEncrypt(u.Password)).First(u)
-	return !errors.Is(result.Error, gorm.ErrRecordNotFound)
+	return result == nil
 }
 
 // GetUserInfoByID 获取用户信息

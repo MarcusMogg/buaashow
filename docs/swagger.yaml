@@ -379,7 +379,7 @@ paths:
       - application/json
       summary: 创建教师账号 需管理员登录
       tags:
-      - user
+      - User
   /user/verify:
     post:
       consumes:

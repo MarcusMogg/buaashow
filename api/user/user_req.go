@@ -20,7 +20,7 @@ type emailData struct {
 // PasswordData for update password
 type passwordData struct {
 	OldPassword string `form:"old" json:"old" binding:"required"`
-	NewPassword string `form:"new" json:"new" binding:"required,gte=4,lse=16,asciiprint"`
+	NewPassword string `form:"new" json:"new" binding:"required,gte=4,lte=16,ascii"`
 }
 
 // RegisterData only admin regist teachers

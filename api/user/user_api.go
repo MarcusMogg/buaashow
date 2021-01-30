@@ -162,7 +162,7 @@ func UpdatePassword(c *gin.Context) {
 }
 
 // CreateTeacher gdoc
-// @Tags user
+// @Tags User
 // @Summary 创建教师账号 需管理员登录
 // @accept application/json
 // @Produce application/json

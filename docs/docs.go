@@ -414,7 +414,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "User"
                 ],
                 "summary": "创建教师账号 需管理员登录",
                 "parameters": [
