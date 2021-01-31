@@ -16,19 +16,28 @@ import (
 // checkMCourseAuth 检查用户是否有操作table m_courses的权限
 func checkMCourseAuth(cid uint, uid uint, auth entity.CourseAuth) bool {
 	var relation entity.RCourseStudent
-	if err := global.GDB.Where("course_id = ? and user_id = ?", cid, uid).First(&relation); err != nil {
+	if err := global.GDB.Where("course_id = ? and user_id = ?", cid, uid).First(&relation).Error; err != nil {
 		return false
 	}
 	return relation.Auth >= auth
 }
 
 // CreateCourse 创建课程，并创建教师与课程之间的关联
-func CreateCourse(course *entity.MCourse, user *entity.MUser) error {
+func CreateCourse(term *entity.Term, course *entity.MCourse, user *entity.MUser) error {
 	relation := entity.RCourseStudent{
 		UserID: user.ID,
 		Auth:   entity.Owner,
 	}
+	t := &entity.MTerm{
+		Term: (*term),
+	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
+		result := tx.Where("year = ? and season = ?", t.Year, t.Season).
+			First(t)
+		if result.Error != nil {
+			return errors.New("该学期不存在")
+		}
+		course.TID = t.ID
 		if err := tx.Create(course).Error; err != nil {
 			zap.S().Debug(err)
 			return err
@@ -46,8 +55,9 @@ func CreateCourse(course *entity.MCourse, user *entity.MUser) error {
 func GetMyCourses(user *entity.MUser) []entity.CourseResp {
 	var res []entity.CourseResp
 	global.GDB.Model(&entity.MCourse{}).
-		Select("m_courses.id,m_courses.name,m_courses.info,m_courses.year,m_courses.season").
+		Select("m_courses.id,m_courses.name,m_courses.info,m_terms.year,m_terms.season").
 		Joins("INNER JOIN r_course_students ON r_course_students.course_id = m_courses.id").
+		Joins("INNER JOIN m_terms ON m_courses.t_id = m_terms.ID").
 		Where("r_course_students.user_id = ?", user.ID).
 		Find(&res)
 	return res
@@ -57,6 +67,8 @@ func GetMyCourses(user *entity.MUser) []entity.CourseResp {
 func GetCourseInfoByID(id uint) (*entity.CourseResp, error) {
 	var res entity.CourseResp
 	result := global.GDB.Model(&entity.MCourse{}).
+		Select("m_courses.id,m_courses.name,m_courses.info,m_terms.year,m_terms.season").
+		Joins("INNER JOIN m_terms ON m_courses.t_id = m_terms.ID").
 		Where("m_courses.id = ?", id).
 		First(&res)
 	if result.Error != nil {
@@ -66,15 +78,12 @@ func GetCourseInfoByID(id uint) (*entity.CourseResp, error) {
 }
 
 // CreateStudentsToCourse 向课程里添加学生，如果学生账号不存在，则创建学生
-func CreateStudentsToCourse(accounts, names []string, cid uint, uid uint) (fails []string, err error) {
+func CreateStudentsToCourse(accounts []string, cid uint, uid uint) (fails []string, err error) {
 	if !checkMCourseAuth(cid, uid, entity.Manager) {
 		err = errors.New("权限不足")
 		return
 	}
-	if len(accounts) != len(names) {
-		err = errors.New("参数不匹配")
-		return
-	}
+	fails = make([]string, 0)
 	basePwd := utils.AesEncrypt("666666")
 	for i := range accounts {
 		err = global.GDB.Transaction(func(tx *gorm.DB) error {
@@ -83,7 +92,6 @@ func CreateStudentsToCourse(accounts, names []string, cid uint, uid uint) (fails
 				Attrs(entity.MUser{
 					Password: basePwd,
 					Role:     entity.Student,
-					Name:     names[i],
 				}).
 				FirstOrCreate(&user)
 			if result.Error != nil {

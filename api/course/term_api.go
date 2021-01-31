@@ -3,16 +3,15 @@ package course
 import (
 	"buaashow/entity"
 	"buaashow/response"
-	"time"
+	"buaashow/service"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
-
-var seasons = [...]time.Month{time.February, time.July, time.September}
 
 // GetTerms gdoc
 // @Tags term
-// @Summary 获取学期信息，从用户创建时间到当前时间段 [2,6]春[7,8]夏,[9-1]秋,需用户登录
+// @Summary 获取学期信息，从用户创建时间到当前时间段的所有学期数,需用户登录
 // @Produce application/json
 // @Success 200 {array} entity.Term
 // @Router /terms [get]
@@ -23,36 +22,57 @@ func GetTerms(c *gin.Context) {
 		return
 	}
 	u := claim.(*entity.MUser)
-	response.OkWithData(terms(u), c)
+	year := u.CreatedAt.Year()
+	response.OkWithData(service.GetTerms(year), c)
 }
 
-func terms(user *entity.MUser) []entity.Term {
-	beginY, beginM := tsToYM(user.CreatedAt)
-	curY, curM := tsToYM(time.Now())
-	res := make([]entity.Term, 0)
-	if beginM < time.February {
-		res = append(res, entity.Term{Year: beginY - 1, Season: 2})
-	}
-	for i, j := range seasons {
-		if beginM >= j {
-			res = append(res, entity.Term{Year: beginY, Season: i})
+// CreateTerm gdoc
+// @Tags term
+// @Summary 新增一个学期,需管理员登录,season 1春 2秋
+// @Produce application/json
+// @Param newTermData body entity.Term true "学期信息"
+// @Router /terms [post]
+func CreateTerm(c *gin.Context) {
+	var t entity.Term
+	if err := c.BindJSON(&t); err == nil {
+		if err = service.CreateTerm(&t); err == nil {
+			response.Ok(c)
+		} else {
+			response.FailWithMessage(err.Error(), c)
 		}
+	} else {
+		response.FailValidate(c)
+		zap.S().Debug(err)
 	}
-	for i := beginY + 1; i < curY; i++ {
-		res = append(res, entity.Term{Year: i, Season: 0},
-			entity.Term{Year: i, Season: 1},
-			entity.Term{Year: i, Season: 2})
-	}
-	for i, j := range seasons {
-		if curM >= j {
-			res = append(res, entity.Term{Year: curY, Season: i})
-		}
-	}
-	return res
+
 }
 
-func tsToYM(now time.Time) (int, time.Month) {
-	ny := now.Year()
-	nm := now.Month()
-	return ny, nm
+// DeleteTerm gdoc
+// @Tags term
+// @Summary 删除一个学期,需管理员登录，注意，会同步删除该学期相关的所有课程、实验
+// @Produce application/json
+// @Param newTermData body entity.Term true "学期信息"
+// @Router /terms [delete]
+func DeleteTerm(c *gin.Context) {
+	var t entity.Term
+	if err := c.BindJSON(&t); err == nil {
+		if err = service.DeleteTerm(&t); err == nil {
+			response.Ok(c)
+		} else {
+			response.FailWithMessage(err.Error(), c)
+		}
+	} else {
+		response.FailValidate(c)
+		zap.S().Debug(err)
+	}
+}
+
+// GetAllTerms gdoc
+// @Tags term
+// @Summary 获取所有学期信息
+// @Produce application/json
+// @Success 200 {array} entity.Term
+// @Router /terms/all [get]
+func GetAllTerms(c *gin.Context) {
+	response.OkWithData(service.GetTerms(0), c)
 }

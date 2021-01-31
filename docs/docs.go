@@ -148,7 +148,7 @@ var doc = `{
                 "tags": [
                     "course"
                 ],
-                "summary": "获取课程信息, 需用户登录，当前用户需要与课程相关",
+                "summary": "获取课程信息",
                 "parameters": [
                     {
                         "type": "integer",
@@ -242,7 +242,69 @@ var doc = `{
                 "tags": [
                     "term"
                 ],
-                "summary": "获取学期信息，从用户创建时间到当前时间段 [2,6]春[7,8]夏,[9-1]秋,需用户登录",
+                "summary": "获取学期信息，从用户创建时间到当前时间段的所有学期数,需用户登录",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Term"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "term"
+                ],
+                "summary": "新增一个学期,需管理员登录,season 1春 2秋",
+                "parameters": [
+                    {
+                        "description": "学期信息",
+                        "name": "newTermData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Term"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "term"
+                ],
+                "summary": "删除一个学期,需管理员登录，注意，会同步删除该学期相关的所有课程、实验",
+                "parameters": [
+                    {
+                        "description": "学期信息",
+                        "name": "newTermData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Term"
+                        }
+                    }
+                ]
+            }
+        },
+        "/terms/all": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "term"
+                ],
+                "summary": "获取所有学期信息",
                 "responses": {
                     "200": {
                         "description": "OK",

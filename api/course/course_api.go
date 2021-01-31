@@ -28,11 +28,10 @@ func CreateCourse(c *gin.Context) {
 	var req courseData
 	if err := c.ShouldBindJSON(&req); err == nil {
 		course := entity.MCourse{
-			Term: req.Term,
 			Name: req.Name,
 			Info: req.Info,
 		}
-		if err = service.CreateCourse(&course, u); err == nil {
+		if err = service.CreateCourse(&req.Term, &course, u); err == nil {
 			response.OkWithData(entity.CourseResp{
 				ID:   course.ID,
 				Term: req.Term,
@@ -68,7 +67,7 @@ func GetMyCourses(c *gin.Context) {
 
 // GetCourseInfo gdoc
 // @Tags course
-// @Summary 获取课程信息, 需用户登录，当前用户需要与课程相关
+// @Summary 获取课程信息
 // @Produce application/json
 // @Param id path int true "Course ID"
 // @Success 200 {object} entity.CourseResp
@@ -109,7 +108,7 @@ func CreateStudents(c *gin.Context) {
 	}
 	var req studentsData
 	if err := c.BindJSON(&req); err == nil {
-		fails, err := service.CreateStudentsToCourse(req.Accounts, req.Names, uint(cid), u.ID)
+		fails, err := service.CreateStudentsToCourse(req.Accounts, uint(cid), u.ID)
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
 		} else {
@@ -163,7 +162,7 @@ func DeleteStudent(c *gin.Context) {
 		return
 	}
 	err = service.DeleteStudent(uint(cid), uint(uid), u)
-	if err != nil {
+	if err == nil {
 		response.Ok(c)
 	} else {
 		response.FailWithMessage(err.Error(), c)
@@ -172,7 +171,7 @@ func DeleteStudent(c *gin.Context) {
 
 // DeleteCourse gdoc
 // @Tags course
-// @Summary 删除学生,需用户登录，当前用户需要是课程创建者
+// @Summary 删除课程,需用户登录，当前用户需要是课程创建者
 // @Produce application/json
 // @Param cid path int true "Course ID"
 // @Success 200

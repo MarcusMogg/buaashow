@@ -1,16 +1,20 @@
 package entity
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
 // Term 学期
-// Season 0 春 1 夏 2 秋
 type Term struct {
-	Year   int `json:"year" binding:"gte=2020"`
-	Season int `json:"season" binding:"gte=0,lte=2"`
+	Year   int `json:"year" binding:"required"`
+	Season int `json:"season" binding:"required,gte=1,lte=2"`
+}
+
+// MTerm 学期
+// Season 1 春 2 秋
+type MTerm struct {
+	gorm.Model `json:"-"`
+	Term
 }
 
 // MCourse 课程信息
@@ -18,27 +22,24 @@ type Term struct {
 // TODO: More course content
 type MCourse struct {
 	gorm.Model
+	TID  uint
 	Name string
 	Info string
-	Term
 }
 
 // CourseResp 接口返回的课程信息
 type CourseResp struct {
 	ID   uint   `json:"cid"`
-	Name string `json:"name" binding:"require,gte=4,lte=32"`
+	Name string `json:"name"`
 	Info string `json:"info"`
 	Term
 }
 
 // RCourseStudent 课程与学生关联表
 type RCourseStudent struct {
-	CourseID  uint `gorm:"primarykey"`
-	UserID    uint `gorm:"primarykey"`
-	Auth      CourseAuth
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	CourseID uint `gorm:"primarykey"`
+	UserID   uint `gorm:"primarykey"`
+	Auth     CourseAuth
 }
 
 // CourseAuth 用户对课程的权限
