@@ -10,6 +10,10 @@ definitions:
         type: integer
       year:
         type: integer
+    required:
+    - name
+    - season
+    - year
     type: object
   course.studentsData:
     properties:
@@ -17,10 +21,8 @@ definitions:
         items:
           type: string
         type: array
-      names:
-        items:
-          type: string
-        type: array
+    required:
+    - accounts
     type: object
   entity.CourseResp:
     properties:
@@ -34,6 +36,9 @@ definitions:
         type: integer
       year:
         type: integer
+    required:
+    - season
+    - year
     type: object
   entity.Term:
     properties:
@@ -41,6 +46,9 @@ definitions:
         type: integer
       year:
         type: integer
+    required:
+    - season
+    - year
     type: object
   entity.UserInfoRes:
     properties:
@@ -170,7 +178,7 @@ paths:
       responses:
         "200":
           description: ""
-      summary: 删除学生,需用户登录，当前用户需要是课程创建者
+      summary: 删除课程,需用户登录，当前用户需要是课程创建者
       tags:
       - course
   /course/{cid}/student/{uid}:
@@ -255,6 +263,28 @@ paths:
       summary: 导入学生, 需用户登录，当前用户有课程管理权限
       tags:
       - course
+  /img:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: 选择上传文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      summary: 上传图片
+      tags:
+      - Img
+  /img/{name}:
+    get:
+      produces:
+      - application/json
+      summary: 获取图片
+      tags:
+      - Img
   /terms:
     delete:
       parameters:

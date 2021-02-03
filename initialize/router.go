@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"buaashow/api/course"
+	"buaashow/api/img"
 	"buaashow/api/swagger"
 	"buaashow/api/user"
 	"buaashow/middleware"
@@ -12,6 +13,8 @@ import (
 // Router 初始化路由列表
 func Router() *gin.Engine {
 	var Router = gin.Default()
+	// 设置multipart forms最大内存限制 4MB
+	Router.MaxMultipartMemory = 4 << 20
 
 	APIGroup := Router.Group("")
 
@@ -20,6 +23,6 @@ func Router() *gin.Engine {
 	user.InitRouter(APIGroup)
 	course.InitRouter(APIGroup)
 	swagger.InitRouter(APIGroup)
-
+	img.InitRouter(APIGroup)
 	return Router
 }

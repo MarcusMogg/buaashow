@@ -91,7 +91,7 @@ var doc = `{
                 "tags": [
                     "course"
                 ],
-                "summary": "删除学生,需用户登录，当前用户需要是课程创建者",
+                "summary": "删除课程,需用户登录，当前用户需要是课程创建者",
                 "parameters": [
                     {
                         "type": "integer",
@@ -232,6 +232,40 @@ var doc = `{
                         }
                     }
                 }
+            }
+        },
+        "/img": {
+            "post": {
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Img"
+                ],
+                "summary": "上传图片",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "选择上传文件",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        "/img/{name}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Img"
+                ],
+                "summary": "获取图片"
             }
         },
         "/terms": {
@@ -529,6 +563,11 @@ var doc = `{
     "definitions": {
         "course.courseData": {
             "type": "object",
+            "required": [
+                "name",
+                "season",
+                "year"
+            ],
             "properties": {
                 "info": {
                     "type": "string"
@@ -546,14 +585,11 @@ var doc = `{
         },
         "course.studentsData": {
             "type": "object",
+            "required": [
+                "accounts"
+            ],
             "properties": {
                 "accounts": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "names": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -563,6 +599,10 @@ var doc = `{
         },
         "entity.CourseResp": {
             "type": "object",
+            "required": [
+                "season",
+                "year"
+            ],
             "properties": {
                 "cid": {
                     "type": "integer"
@@ -583,6 +623,10 @@ var doc = `{
         },
         "entity.Term": {
             "type": "object",
+            "required": [
+                "season",
+                "year"
+            ],
             "properties": {
                 "season": {
                     "type": "integer"

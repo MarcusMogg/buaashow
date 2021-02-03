@@ -84,3 +84,8 @@ func FailToken(c *gin.Context) {
 func FailAuth(c *gin.Context) {
 	FailDetailed(AuthError, map[string]interface{}{}, "权限不足", c)
 }
+
+// Fail404 文件未找到
+func Fail404(c *gin.Context) {
+	c.String(http.StatusNotFound, "file not found")
+}
