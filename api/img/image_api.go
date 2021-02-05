@@ -49,5 +49,6 @@ func Upload(c *gin.Context) {
 // @Produce application/json
 // @Router /img/{name} [get]
 func Download(c *gin.Context) {
-
+	name := c.Param("name")
+	c.File(imgDir + name)
 }
