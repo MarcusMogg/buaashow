@@ -21,7 +21,6 @@ func addToZip(zw *zip.Writer, path, old, new string, fi os.FileInfo) error {
 	}
 	fh.Method = zip.Deflate
 
-	// 这步开始没有加，会发现解压的时候说它不是个目录
 	if fi.IsDir() {
 		fh.Name += "/"
 	}

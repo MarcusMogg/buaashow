@@ -2,7 +2,7 @@ package entity
 
 import "gorm.io/gorm"
 
-// MUser 数据库用户字段
+// MUser 数据库用户表
 type MUser struct {
 	gorm.Model
 	Account  string `gorm:"not null;unique"`

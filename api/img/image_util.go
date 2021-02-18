@@ -1,6 +1,7 @@
 package img
 
 import (
+	"buaashow/global"
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
@@ -11,13 +12,12 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"path"
 	"time"
 
 	"github.com/nfnt/resize"
 	"go.uber.org/zap"
 )
-
-const imgDir = "source/img/"
 
 // 支持的图像类型
 // 图像类型
@@ -81,7 +81,7 @@ func rename(file *multipart.FileHeader, fileType string) (string, error) {
 	fileMD5 := hex.EncodeToString(md5Hash.Sum(nil))
 
 	filePath := fileMD5
-	_, err = os.Stat(imgDir + filePath + "." + fileType)
+	_, err = os.Stat(path.Join(global.GImgPath, filePath+"."+fileType))
 	if err == nil {
 		return "", errors.New("file already exists")
 	}
@@ -89,7 +89,7 @@ func rename(file *multipart.FileHeader, fileType string) (string, error) {
 }
 
 func saveImage(file *multipart.FileHeader, imageF image.Image, fileType, dst string) error {
-	out, err := os.Create(imgDir + dst + "." + fileType)
+	out, err := os.Create(path.Join(global.GImgPath, dst+"."+fileType))
 	if err != nil {
 		return err
 	}

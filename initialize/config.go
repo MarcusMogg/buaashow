@@ -37,4 +37,5 @@ func config() {
 func init() {
 	loggerInit()
 	config()
+	resourceDir()
 }

@@ -1,7 +1,9 @@
 package img
 
 import (
+	"buaashow/global"
 	"buaashow/response"
+	"path"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -50,5 +52,5 @@ func Upload(c *gin.Context) {
 // @Router /img/{name} [get]
 func Download(c *gin.Context) {
 	name := c.Param("name")
-	c.File(imgDir + name)
+	c.File(path.Join(global.GImgPath, name))
 }
