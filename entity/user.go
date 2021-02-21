@@ -1,15 +1,15 @@
 package entity
 
-import "gorm.io/gorm"
+import "time"
 
 // MUser 数据库用户表
 type MUser struct {
-	gorm.Model
-	Account  string `gorm:"not null;unique"`
-	Name     string
-	Email    string
-	Password string `gorm:"not null" json:"-"`
-	Role     Role
+	Account   string `gorm:"not null;unique;primarykey"`
+	CreatedAt time.Time
+	Name      string
+	Email     string
+	Password  string `gorm:"not null" json:"-"`
+	Role      Role
 }
 
 // Role 用户身份
@@ -26,8 +26,8 @@ const (
 
 // UserInfoRes common user info
 type UserInfoRes struct {
-	ID    uint   `json:"id"`
-	Role  int    `json:"role"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Account string `json:"id"`
+	Role    int    `json:"role"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
 }

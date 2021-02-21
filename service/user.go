@@ -29,15 +29,8 @@ func Login(u *entity.MUser) bool {
 	return result.Error == nil
 }
 
-// GetUserInfoByID 获取用户信息
-func GetUserInfoByID(id uint) (*entity.MUser, error) {
-	var u entity.MUser
-	err := global.GDB.First(&u, id).Error
-	return &u, err
-}
-
-// GetUserInfoByAccount 获取用户信息
-func GetUserInfoByAccount(account string) (*entity.MUser, error) {
+// GetUserInfo 获取用户信息
+func GetUserInfo(account string) (*entity.MUser, error) {
 	var u entity.MUser
 	err := global.GDB.Where("account = ?", account).First(&u).Error
 	return &u, err

@@ -4,7 +4,6 @@ import (
 	"buaashow/entity"
 	"buaashow/response"
 	"buaashow/service"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -70,34 +69,30 @@ func GetUserInfo(c *gin.Context) {
 	}
 	u := claim.(*entity.MUser)
 	response.OkWithData(entity.UserInfoRes{
-		ID:    u.ID,
-		Role:  int(u.Role),
-		Email: u.Email,
-		Name:  u.Name,
+		Account: u.Account,
+		Role:    int(u.Role),
+		Email:   u.Email,
+		Name:    u.Name,
 	}, c)
 }
 
 // GetUserInfoByID gdoc
 // @Tags User
-// @Summary 获取指定id的用户信息
+// @Summary 获取指定id(account)的用户信息
 // @Accept  json
 // @Produce  json
-// @Param id path int true "User ID"
+// @Param id path string true "User account"
 // @Success 200 {object} entity.UserInfoRes
 // @Router /user/info/{id} [get]
 func GetUserInfoByID(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		response.FailValidate(c)
-		return
-	}
-	u, err := service.GetUserInfoByID(uint(id))
+	id := c.Param("id")
+	u, err := service.GetUserInfo(id)
 	if err == nil {
 		response.OkWithData(entity.UserInfoRes{
-			ID:    u.ID,
-			Role:  int(u.Role),
-			Name:  u.Name,
-			Email: u.Email,
+			Account: u.Account,
+			Role:    int(u.Role),
+			Name:    u.Name,
+			Email:   u.Email,
 		}, c)
 	} else {
 		response.Fail(c)

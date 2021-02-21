@@ -55,7 +55,7 @@ definitions:
       email:
         type: string
       id:
-        type: integer
+        type: string
       name:
         type: string
       role:
@@ -83,7 +83,7 @@ definitions:
       email:
         type: string
       id:
-        type: integer
+        type: string
       name:
         type: string
       role:
@@ -181,6 +181,11 @@ paths:
       summary: 删除课程,需用户登录，当前用户需要是课程创建者
       tags:
       - course
+  /course/{cid}/exp:
+    get:
+      summary: 获取课程相关的实验信息
+      tags:
+      - course
   /course/{cid}/student/{uid}:
     delete:
       parameters:
@@ -189,11 +194,11 @@ paths:
         name: cid
         required: true
         type: integer
-      - description: Student ID
+      - description: Student Account
         in: path
         name: uid
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -263,6 +268,25 @@ paths:
       summary: 导入学生, 需用户登录，当前用户有课程管理权限
       tags:
       - course
+  /exp:
+    get:
+      summary: 获取自己的实验列表，需登录
+      tags:
+      - exp
+    post:
+      summary: 创建实验 需教师登录
+      tags:
+      - exp
+  /exp/{id}:
+    get:
+      summary: 根据id获取指定实验信息
+      tags:
+      - exp
+  /exp/{id}/submit:
+    post:
+      summary: 提交作业
+      tags:
+      - exp
   /img:
     post:
       consumes:
@@ -377,11 +401,11 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: User ID
+      - description: User account
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -389,7 +413,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/entity.UserInfoRes'
-      summary: 获取指定id的用户信息
+      summary: 获取指定id(account)的用户信息
       tags:
       - User
   /user/login:

@@ -108,6 +108,14 @@ var doc = `{
                 }
             }
         },
+        "/course/{cid}/exp": {
+            "get": {
+                "tags": [
+                    "course"
+                ],
+                "summary": "获取课程相关的实验信息"
+            }
+        },
         "/course/{cid}/student/{uid}": {
             "delete": {
                 "produces": [
@@ -126,8 +134,8 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
-                        "description": "Student ID",
+                        "type": "string",
+                        "description": "Student Account",
                         "name": "uid",
                         "in": "path",
                         "required": true
@@ -232,6 +240,36 @@ var doc = `{
                         }
                     }
                 }
+            }
+        },
+        "/exp": {
+            "get": {
+                "tags": [
+                    "exp"
+                ],
+                "summary": "获取自己的实验列表，需登录"
+            },
+            "post": {
+                "tags": [
+                    "exp"
+                ],
+                "summary": "创建实验 需教师登录"
+            }
+        },
+        "/exp/{id}": {
+            "get": {
+                "tags": [
+                    "exp"
+                ],
+                "summary": "根据id获取指定实验信息"
+            }
+        },
+        "/exp/{id}/submit": {
+            "post": {
+                "tags": [
+                    "exp"
+                ],
+                "summary": "提交作业"
             }
         },
         "/img": {
@@ -415,11 +453,11 @@ var doc = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "获取指定id的用户信息",
+                "summary": "获取指定id(account)的用户信息",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "User ID",
+                        "type": "string",
+                        "description": "User account",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -643,7 +681,7 @@ var doc = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -686,7 +724,7 @@ var doc = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"

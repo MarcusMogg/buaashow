@@ -20,9 +20,8 @@ import (
 func tokenNext(c *gin.Context, u *entity.MUser) {
 	j := middleware.NewJWT()
 	claim := middleware.JWTClaim{
-		UserID:   u.ID,
-		UserName: u.Account,
-		Role:     u.Role,
+		Account: u.Account,
+		Role:    u.Role,
 		StandardClaims: jwt.StandardClaims{
 			NotBefore: time.Now().Unix() - 100,
 			ExpiresAt: time.Now().Unix() + 60*60*24*7,
@@ -36,10 +35,10 @@ func tokenNext(c *gin.Context, u *entity.MUser) {
 	}
 	response.OkWithData(loginRes{
 		UserInfoRes: entity.UserInfoRes{
-			ID:    u.ID,
-			Role:  int(u.Role),
-			Name:  u.Name,
-			Email: u.Email,
+			Account: u.Account,
+			Role:    int(u.Role),
+			Name:    u.Name,
+			Email:   u.Email,
 		},
 		Token: token,
 	}, c)
@@ -66,7 +65,7 @@ func ticketVerify(ticket string, serviceURL string) (user *entity.MUser, err err
 		err = errors.New(res.Msg)
 		return
 	}
-	user, err = service.GetUserInfoByAccount(res.Data.ID)
+	user, err = service.GetUserInfo(res.Data.ID)
 	if err != nil {
 		return
 	}

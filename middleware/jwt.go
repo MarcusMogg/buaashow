@@ -26,9 +26,8 @@ type JWT struct {
 // JWTClaim 存储claim,即用户信息
 type JWTClaim struct {
 	jwt.StandardClaims
-	UserID   uint
-	UserName string
-	Role     entity.Role
+	Account string
+	Role    entity.Role
 }
 
 // NewJWT 使用默认key创建jwt
@@ -76,7 +75,7 @@ func JWTAuth(minRole entity.Role) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		u, err := service.GetUserInfoByID(claim.UserID)
+		u, err := service.GetUserInfo(claim.Account)
 		if err != nil {
 			response.FailToken(c)
 			c.Abort()

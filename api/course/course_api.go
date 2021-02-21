@@ -108,7 +108,7 @@ func CreateStudents(c *gin.Context) {
 	}
 	var req studentsData
 	if err := c.BindJSON(&req); err == nil {
-		fails, err := service.CreateStudentsToCourse(req.Accounts, uint(cid), u.ID)
+		fails, err := service.CreateStudentsToCourse(req.Accounts, uint(cid), u.Account)
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
 		} else {
@@ -141,7 +141,7 @@ func GetStudents(c *gin.Context) {
 // @Summary 删除学生,需用户登录，当前用户有课程管理权限
 // @Produce application/json
 // @Param cid path int true "Course ID"
-// @Param uid path int true "Student ID"
+// @Param uid path string true "Student Account"
 // @Success 200
 // @Router /course/{cid}/student/{uid} [delete]
 func DeleteStudent(c *gin.Context) {
@@ -156,12 +156,8 @@ func DeleteStudent(c *gin.Context) {
 		response.FailValidate(c)
 		return
 	}
-	uid, err := strconv.ParseUint(c.Param("uid"), 10, 0)
-	if err != nil {
-		response.FailValidate(c)
-		return
-	}
-	err = service.DeleteStudent(uint(cid), uint(uid), u)
+	uid := c.Param("uid")
+	err = service.DeleteStudent(uint(cid), uid, u)
 	if err == nil {
 		response.Ok(c)
 	} else {
@@ -195,4 +191,12 @@ func DeleteCourse(c *gin.Context) {
 	} else {
 		response.FailWithMessage(err.Error(), c)
 	}
+}
+
+// GetExps godc
+// @Tags course
+// @Summary 获取课程相关的实验信息
+// @Router /course/{cid}/exp [get]
+func GetExps(c *gin.Context) {
+
 }

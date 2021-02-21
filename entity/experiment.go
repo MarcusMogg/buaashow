@@ -21,9 +21,10 @@ type MExperimentResource struct {
 // MExperimentSubmit 学生作业提交状态
 // if GID == EID,  then he can modify the group member.
 // Anyone in the group can modify the submission
+// TODO : 用户提交的作业内容
 type MExperimentSubmit struct {
-	EID    uint `gorm:"primarykey"`
-	SID    uint `gorm:"primarykey"`
+	EID    uint   `gorm:"primarykey"`
+	UID    string `gorm:"primarykey"`
 	GID    uint
 	Status bool
 }

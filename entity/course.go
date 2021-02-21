@@ -21,7 +21,7 @@ type MTerm struct {
 // Name-{Year}年-{Senson}学期
 // TODO: More course content
 type MCourse struct {
-	gorm.Model
+	ID   uint `gorm:"primarykey"`
 	TID  uint
 	Name string
 	Info string
@@ -37,8 +37,8 @@ type CourseResp struct {
 
 // RCourseStudent 课程与学生关联表
 type RCourseStudent struct {
-	CourseID uint `gorm:"primarykey"`
-	UserID   uint `gorm:"primarykey"`
+	CourseID uint   `gorm:"primarykey"`
+	UserID   string `gorm:"primarykey"`
 	Auth     CourseAuth
 }
 
