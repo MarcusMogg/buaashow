@@ -116,8 +116,8 @@ func CreateStudentsToCourse(accounts []string, cid uint, uid string) (fails []st
 func GetStudentsInCourse(cid uint) []entity.UserInfoRes {
 	var res []entity.UserInfoRes
 	global.GDB.Model(&entity.RCourseStudent{}).
-		Select("m_users.id,m_users.role,m_users.name,m_users.email").
-		Joins("INNER JOIN m_users ON r_course_students.user_id = m_users.id").
+		Select("m_users.account,m_users.role,m_users.name,m_users.email").
+		Joins("INNER JOIN m_users ON r_course_students.user_id = m_users.account").
 		Where("r_course_students.course_id = ?", cid).
 		Find(&res)
 	return res
