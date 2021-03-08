@@ -22,5 +22,4 @@ func DBTables() {
 	global.GDB.AutoMigrate(&entity.RCourseStudent{})
 	global.GDB.AutoMigrate(&entity.MExperiment{})
 	global.GDB.AutoMigrate(&entity.MExperimentSubmit{})
-	global.GDB.AutoMigrate(&entity.MExperimentResource{})
 }

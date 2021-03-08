@@ -34,7 +34,7 @@ func GetTerms(c *gin.Context) {
 // @Router /terms [post]
 func CreateTerm(c *gin.Context) {
 	var t entity.Term
-	if err := c.BindJSON(&t); err == nil {
+	if err := c.ShouldBindJSON(&t); err == nil {
 		if err = service.CreateTerm(&t); err == nil {
 			response.Ok(c)
 		} else {
@@ -55,7 +55,7 @@ func CreateTerm(c *gin.Context) {
 // @Router /terms [delete]
 func DeleteTerm(c *gin.Context) {
 	var t entity.Term
-	if err := c.BindJSON(&t); err == nil {
+	if err := c.ShouldBindJSON(&t); err == nil {
 		if err = service.DeleteTerm(&t); err == nil {
 			response.Ok(c)
 		} else {

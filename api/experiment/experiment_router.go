@@ -11,9 +11,12 @@ import (
 func InitRouter(Router *gin.RouterGroup) {
 	CourseRouter := Router.Group("exp")
 	{
-		CourseRouter.POST("", middleware.JWTAuth(entity.Teacher), CreateExp)
 		CourseRouter.GET("", middleware.JWTAuth(entity.Student), GetMyExps)
+		CourseRouter.POST(":id", middleware.JWTAuth(entity.Teacher), EditExp)
+		CourseRouter.DELETE(":id", middleware.JWTAuth(entity.Teacher), DeleteExp)
 		CourseRouter.GET(":id", GetExp)
+		CourseRouter.POST(":id/submit", middleware.JWTAuth(entity.Student), SubmitExp)
 		CourseRouter.GET(":id/submit", middleware.JWTAuth(entity.Student), SubmitExp)
+		//TODO: statistics for teacher
 	}
 }

@@ -14,6 +14,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		CourseRouter.POST("", middleware.JWTAuth(entity.Teacher), CreateCourse)
 		CourseRouter.GET("", middleware.JWTAuth(entity.Student), GetMyCourses)
 		CourseRouter.GET(":id", middleware.JWTAuth(entity.Student), GetCourseInfo)
+		CourseRouter.POST(":id/exps", middleware.JWTAuth(entity.Teacher), CreateExp)
 		CourseRouter.GET(":id/exps", GetExps)
 		CourseRouter.GET(":id/students", GetStudents)
 		CourseRouter.POST(":id/students", middleware.JWTAuth(entity.Teacher), CreateStudents)

@@ -2,9 +2,12 @@ package course
 
 import (
 	"buaashow/entity"
+	"buaashow/global"
 	"buaashow/response"
 	"buaashow/service"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -107,7 +110,7 @@ func CreateStudents(c *gin.Context) {
 		return
 	}
 	var req studentsData
-	if err := c.BindJSON(&req); err == nil {
+	if err := c.ShouldBindJSON(&req); err == nil {
 		fails, err := service.CreateStudentsToCourse(req.Accounts, uint(cid), u.Account)
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
@@ -193,10 +196,76 @@ func DeleteCourse(c *gin.Context) {
 	}
 }
 
+// CreateExp godc
+// @Tags exp
+// @Summary 创建实验 需教师登录
+// @Produce application/json
+// @Param cid path int true "Course ID"
+// @Param exp body entity.ExperimentReq true "实验信息"
+// @Success 200
+// @Router /course/{cid}/exp [post]
+func CreateExp(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	cid, err := strconv.ParseUint(c.Param("cid"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	var req entity.ExperimentReq
+	if err := c.ShouldBindJSON(&req); err == nil {
+		var begin, end time.Time
+		if begin, err = time.Parse(global.TimeTemplateSec, req.BeginTime); err != nil {
+			response.FailValidate(c)
+			zap.S().Debug(err)
+			return
+		}
+		if end, err = time.Parse(global.TimeTemplateSec, req.EndTime); err != nil {
+			response.FailValidate(c)
+			zap.S().Debug(err)
+			return
+		}
+		exp := entity.MExperiment{
+			CID:       uint(cid),
+			Name:      req.Name,
+			Info:      req.Info,
+			BeginTime: begin,
+			EndTime:   end,
+			Resources: strings.Join(req.Resources, ","),
+		}
+		if err = service.CreateExp(&exp, u.Account); err != nil {
+			response.FailWithMessage(err.Error(), c)
+			zap.S().Debug(err)
+			return
+		}
+		response.Ok(c)
+	} else {
+		response.FailValidate(c)
+		zap.S().Debug(err)
+	}
+}
+
 // GetExps godc
-// @Tags course
+// @Tags exp
 // @Summary 获取课程相关的实验信息
+// @Produce application/json
+// @Success 200 {array} entity.ExperimentResponse
 // @Router /course/{cid}/exp [get]
 func GetExps(c *gin.Context) {
-
+	cid, err := strconv.ParseUint(c.Param("cid"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	res, err := service.GetExpsByCID(uint(cid))
+	if err != nil {
+		zap.S().Debug(err.Error())
+		response.FailWithMessage(err.Error(), c)
+	} else {
+		response.OkWithData(res, c)
+	}
 }
