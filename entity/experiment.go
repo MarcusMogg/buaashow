@@ -20,10 +20,23 @@ type MExperiment struct {
 // Anyone in the group can modify the submission
 // TODO : 用户提交的作业内容
 type MExperimentSubmit struct {
-	EID uint   `gorm:"primarykey"`
-	UID string `gorm:"primarykey"`
-	GID string
+	EID    uint   `gorm:"primarykey"`
+	UID    string `gorm:"primarykey"`
+	GID    string
+	Status bool
 }
+
+// SummitType 允许提交的作品类型
+type SummitType int
+
+const (
+	// HTML 静态网页
+	HTML SummitType = iota + 1
+	// EXE 可执行文件
+	EXE
+	// URL 外部链接
+	URL
+)
 
 // MSubmission 学生作业提交
 type MSubmission struct {
@@ -31,7 +44,7 @@ type MSubmission struct {
 	GID       string `gorm:"primarykey"`
 	Name      string
 	Info      string
-	Type      string
+	Type      SummitType
 	URL       string
 	Readme    string
 	UpdatedAt time.Time
@@ -62,4 +75,16 @@ type ExperimentReq struct {
 	EndTime   string `json:"end"`
 
 	Resources []string `json:"resources"`
+}
+
+// SubmissionResp 作业信息
+type SubmissionResp struct {
+	Status    bool     `json:"status"`
+	Groups    []string `json:"groups"`
+	UpdatedAt string   `json:"time"`
+	Name      string   `json:"name"`
+	Info      string   `json:"info"`
+	Type      int      `json:"type"`
+	URL       string   `json:"url"`
+	Readme    string   `json:"readme"`
 }

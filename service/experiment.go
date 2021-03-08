@@ -23,9 +23,10 @@ func CreateExp(e *entity.MExperiment, uid string) error {
 		}
 		for _, i := range rs {
 			if err := tx.Create(&entity.MExperimentSubmit{
-				EID: e.ID,
-				UID: i.UserID,
-				GID: i.UserID,
+				EID:    e.ID,
+				UID:    i.UserID,
+				GID:    i.UserID,
+				Status: false,
 			}).Error; err != nil {
 				return err
 			}
@@ -54,7 +55,7 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = global.GDB.Where("course_id = ? && auth = ?",
+	err = global.GDB.Where("course_id = ? AND auth = ?",
 		i.CID, entity.Owner).First(&ca).Error
 	if err != nil {
 		return nil, err
@@ -125,4 +126,66 @@ func DeleteExp(eid uint, uid string) error {
 		}
 		return nil
 	})
+}
+
+// Submit 提交作业
+// only uid == gid can submit
+func Submit(s *entity.MSubmission, uid string) error {
+	var mid entity.MExperimentSubmit
+	var exp entity.MExperiment
+	return global.GDB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("id = ?", s.EID).
+			Select("begin_time,end_time").First(&exp).Error; err != nil {
+			return err
+		}
+		if s.UpdatedAt.Before(exp.BeginTime) || s.UpdatedAt.After(exp.EndTime) {
+			return errors.New("不在时间区间")
+		}
+		if err := tx.Where("e_id = ? AND u_id = ?", s.EID, uid).
+			First(&mid).Error; err != nil {
+			return err
+		}
+		if s.GID != uid {
+			return errors.New("权限不足")
+		}
+		s.GID = mid.GID
+		if mid.Status {
+			return tx.Save(s).Error
+		}
+		if err := tx.Create(s).Error; err != nil {
+			return err
+		}
+		mid.Status = true
+		return tx.Save(&mid).Error
+	})
+}
+
+// GetSubmission 获取提交信息
+func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
+	var mid entity.MExperimentSubmit
+	var sub entity.MSubmission
+	if err := global.GDB.Where("e_id = ? AND u_id = ?", eid, uid).
+		First(&mid).Error; err != nil {
+		return err
+	}
+	if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
+		First(&sub).Error; err != nil {
+		return err
+	}
+	var groups []entity.MExperimentSubmit
+	if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
+		Find(&groups).Error; err != nil {
+		return err
+	}
+	res.Status = true
+	res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
+	res.Name = sub.Name
+	res.Info = sub.Info
+	res.Type = int(sub.Type)
+	res.URL = sub.URL
+	res.Readme = sub.Readme
+	for _, i := range groups {
+		res.Groups = append(res.Groups, i.UID)
+	}
+	return nil
 }

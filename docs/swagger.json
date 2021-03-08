@@ -94,10 +94,56 @@
         },
         "/course/{cid}/exp": {
             "get": {
-                "tags": [
-                    "course"
+                "produces": [
+                    "application/json"
                 ],
-                "summary": "获取课程相关的实验信息"
+                "tags": [
+                    "exp"
+                ],
+                "summary": "获取课程相关的实验信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.ExperimentResponse"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "创建实验 需教师登录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Course ID",
+                        "name": "cid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "实验信息",
+                        "name": "exp",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.ExperimentReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
             }
         },
         "/course/{cid}/student/{uid}": {
@@ -228,32 +274,87 @@
         },
         "/exp": {
             "get": {
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "exp"
                 ],
-                "summary": "获取自己的实验列表，需登录"
-            },
-            "post": {
-                "tags": [
-                    "exp"
-                ],
-                "summary": "创建实验 需教师登录"
+                "summary": "获取自己的实验列表，需登录",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.ExperimentResponse"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/exp/{id}": {
             "get": {
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "exp"
                 ],
-                "summary": "根据id获取指定实验信息"
+                "summary": "删除指定实验",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "修改指定实验",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
             }
         },
         "/exp/{id}/submit": {
-            "post": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "exp"
                 ],
-                "summary": "提交作业"
+                "summary": "学生提交信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.SubmissionResp"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "提交作业",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
             }
         },
         "/img": {
@@ -640,6 +741,99 @@
                 },
                 "year": {
                     "type": "integer"
+                }
+            }
+        },
+        "entity.ExperimentReq": {
+            "type": "object",
+            "properties": {
+                "begin": {
+                    "description": "YYYY-MM-DD HH-MM-SS",
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "info": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "resources": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "entity.ExperimentResponse": {
+            "type": "object",
+            "properties": {
+                "begin": {
+                    "description": "YYYY-MM-DD HH-MM-SS",
+                    "type": "string"
+                },
+                "cid": {
+                    "description": "course info",
+                    "type": "integer"
+                },
+                "cname": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "info": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "resources": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "teacher": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.SubmissionResp": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "info": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "readme": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "boolean"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },

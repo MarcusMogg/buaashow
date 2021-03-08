@@ -147,7 +147,68 @@ func DeleteExp(c *gin.Context) {
 // SubmitExp godc
 // @Tags exp
 // @Summary 提交作业
+// @Produce application/json
+// @Success 200
 // @Router /exp/{id}/submit [post]
 func SubmitExp(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	var req SubmissionReq
+	if err := c.ShouldBindJSON(&req); err == nil {
+		now := time.Now()
+		submission := entity.MSubmission{
+			EID:  uint(eid),
+			Name: req.Name,
+			Info: req.Info,
+			Type: req.Type,
+			// TODO: 不是原来的URL，需要展开
+			URL:       req.URL,
+			Readme:    req.Readme,
+			UpdatedAt: now,
+		}
+		if err = service.Submit(&submission, u.Account); err != nil {
+			response.FailWithMessage(err.Error(), c)
+			zap.S().Debug(err)
+		} else {
+			response.Ok(c)
+		}
+	} else {
+		response.FailValidate(c)
+		zap.S().Debug(err)
+	}
+}
 
+// SubmitInfo godc
+// @Tags exp
+// @Summary 学生提交信息
+// @Produce application/json
+// @Success 200 {object} entity.SubmissionResp
+// @Router /exp/{id}/submit [get]
+func SubmitInfo(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	var res entity.SubmissionResp
+	if err = service.GetSubmission(uint(eid), u.Account, &res); err != nil {
+		zap.S().Debug(err)
+		res.Status = false
+	}
+	response.OkWithData(res, c)
 }

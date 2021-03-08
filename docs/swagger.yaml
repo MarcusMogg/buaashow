@@ -40,6 +40,68 @@ definitions:
     - season
     - year
     type: object
+  entity.ExperimentReq:
+    properties:
+      begin:
+        description: YYYY-MM-DD HH-MM-SS
+        type: string
+      end:
+        type: string
+      info:
+        type: string
+      name:
+        type: string
+      resources:
+        items:
+          type: string
+        type: array
+    type: object
+  entity.ExperimentResponse:
+    properties:
+      begin:
+        description: YYYY-MM-DD HH-MM-SS
+        type: string
+      cid:
+        description: course info
+        type: integer
+      cname:
+        type: string
+      end:
+        type: string
+      id:
+        type: integer
+      info:
+        type: string
+      name:
+        type: string
+      resources:
+        items:
+          type: string
+        type: array
+      teacher:
+        type: string
+    type: object
+  entity.SubmissionResp:
+    properties:
+      groups:
+        items:
+          type: string
+        type: array
+      info:
+        type: string
+      name:
+        type: string
+      readme:
+        type: string
+      status:
+        type: boolean
+      time:
+        type: string
+      type:
+        type: integer
+      url:
+        type: string
+    type: object
   entity.Term:
     properties:
       season:
@@ -183,9 +245,39 @@ paths:
       - course
   /course/{cid}/exp:
     get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.ExperimentResponse'
+            type: array
       summary: 获取课程相关的实验信息
       tags:
-      - course
+      - exp
+    post:
+      parameters:
+      - description: Course ID
+        in: path
+        name: cid
+        required: true
+        type: integer
+      - description: 实验信息
+        in: body
+        name: exp
+        required: true
+        schema:
+          $ref: '#/definitions/entity.ExperimentReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: 创建实验 需教师登录
+      tags:
+      - exp
   /course/{cid}/student/{uid}:
     delete:
       parameters:
@@ -270,20 +362,55 @@ paths:
       - course
   /exp:
     get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.ExperimentResponse'
+            type: array
       summary: 获取自己的实验列表，需登录
-      tags:
-      - exp
-    post:
-      summary: 创建实验 需教师登录
       tags:
       - exp
   /exp/{id}:
     get:
-      summary: 根据id获取指定实验信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: 删除指定实验
+      tags:
+      - exp
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: 修改指定实验
       tags:
       - exp
   /exp/{id}/submit:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.SubmissionResp'
+      summary: 学生提交信息
+      tags:
+      - exp
     post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
       summary: 提交作业
       tags:
       - exp
