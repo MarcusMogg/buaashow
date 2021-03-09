@@ -4,10 +4,8 @@ import (
 	"buaashow/global"
 	"buaashow/response"
 	"path"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 // Upload gdoc
@@ -23,25 +21,21 @@ func Upload(c *gin.Context) {
 		response.FailValidate(c)
 		return
 	}
-	start := time.Now()
 	iimg, imgType, err := decode(file)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	zap.S().Debug(time.Now().Sub(start))
-	baseName, err := rename(file, imgType)
+	baseName, err := rename(imgType)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	zap.S().Debug(time.Now().Sub(start))
 	res, err := resizeFile(file, iimg, imgType, baseName)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	zap.S().Debug(time.Now().Sub(start))
 	response.OkWithData(res, c)
 }
 

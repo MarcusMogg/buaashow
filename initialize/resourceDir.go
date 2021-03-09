@@ -23,4 +23,5 @@ func resourceDir() {
 	mkdir(global.GImgPath)
 	mkdir(global.GStaticPath)
 	mkdir(global.GCoursePath)
+	mkdir(global.GTmpPath)
 }

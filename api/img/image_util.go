@@ -2,14 +2,12 @@ package img
 
 import (
 	"buaashow/global"
-	"crypto/md5"
-	"encoding/hex"
+	"buaashow/utils"
 	"errors"
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
-	"io"
 	"mime/multipart"
 	"os"
 	"path"
@@ -65,23 +63,9 @@ func decode(file *multipart.FileHeader) (image.Image, string, error) {
 	return img, imgtype, nil
 }
 
-func rename(file *multipart.FileHeader, fileType string) (string, error) {
-	f, err := file.Open()
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	md5Hash := md5.New()
-	_, err = io.Copy(md5Hash, f)
-	if err != nil {
-		return "", err
-	}
-
-	fileMD5 := hex.EncodeToString(md5Hash.Sum(nil))
-
-	filePath := fileMD5
-	_, err = os.Stat(path.Join(global.GImgPath, filePath+"."+fileType))
+func rename(fileType string) (string, error) {
+	filePath := utils.NextID()
+	_, err := os.Stat(path.Join(global.GImgPath, filePath+"."+fileType))
 	if err == nil {
 		return "", errors.New("file already exists")
 	}

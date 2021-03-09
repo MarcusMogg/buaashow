@@ -2,7 +2,9 @@ package initialize
 
 import (
 	"buaashow/api/course"
+	"buaashow/api/experiment"
 	"buaashow/api/img"
+	"buaashow/api/show"
 	"buaashow/api/swagger"
 	"buaashow/api/user"
 	"buaashow/middleware"
@@ -24,5 +26,7 @@ func Router() *gin.Engine {
 	course.InitRouter(APIGroup)
 	swagger.InitRouter(APIGroup)
 	img.InitRouter(APIGroup)
+	experiment.InitRouter(APIGroup)
+	show.InitRouter(APIGroup)
 	return Router
 }

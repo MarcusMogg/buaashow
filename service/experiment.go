@@ -4,6 +4,7 @@ import (
 	"buaashow/entity"
 	"buaashow/global"
 	"errors"
+	"fmt"
 	"strings"
 
 	"gorm.io/gorm"
@@ -149,6 +150,10 @@ func Submit(s *entity.MSubmission, uid string) error {
 			return errors.New("权限不足")
 		}
 		s.GID = mid.GID
+		if err := ToUnzip(s.EID, s.GID, s.URL); err != nil {
+			return err
+		}
+		s.URL = fmt.Sprintf("show/%d/%s/index.html", s.EID, s.GID)
 		if mid.Status {
 			return tx.Save(s).Error
 		}

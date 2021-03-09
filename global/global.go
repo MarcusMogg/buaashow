@@ -31,3 +31,6 @@ const GStaticPath = GResourcesPath + "static/"
 
 // GCoursePath 静态资源文件路径
 const GCoursePath = GResourcesPath + "course/"
+
+// GTmpPath 临时文件路径
+const GTmpPath = GResourcesPath + "tmp/"
