@@ -37,7 +37,7 @@ func Upload(c *gin.Context) {
 	}
 	fileType := path.Ext(file.Filename)
 	baseName := utils.NextID()
-	realPath := path.Join(global.GTmpPath, baseName+"."+fileType)
+	realPath := path.Join(global.GTmpPath, baseName+fileType)
 	_, err = os.Stat(realPath)
 	if err == nil {
 		response.FailWithMessage("文件已存在", c)
@@ -48,9 +48,7 @@ func Upload(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	response.OkWithData(gin.H{
-		"path": baseName + "." + fileType,
-	}, c)
+	response.OkWithData(baseName+fileType, c)
 }
 
 // Show gdoc
@@ -60,7 +58,7 @@ func Upload(c *gin.Context) {
 // @Router /show/{eid}/{gid}/{filepath} [get]
 func Show() func(c *gin.Context) {
 	fs := gin.Dir(global.GCoursePath, false)
-	fileServer := http.StripPrefix("/show", http.FileServer(fs))
+	// fileServer := http.StripPrefix("/show", http.FileServer(fs))
 	canShow := true
 	return func(c *gin.Context) {
 		eid := c.Param("eid")
@@ -68,10 +66,10 @@ func Show() func(c *gin.Context) {
 		dir := fmt.Sprintf("%s/%s/show", eid, gid)
 		file := c.Param("filepath")
 		// default index
-		if file == "/" {
+		/*if file == "/" {
 			file = "index.html"
-		}
-		if canShow {
+		}*/
+		if !canShow {
 			c.Status(http.StatusNotFound)
 			return
 		}
@@ -87,6 +85,16 @@ func Show() func(c *gin.Context) {
 			}
 		}
 		f.Close()
-		fileServer.ServeHTTP(c.Writer, c.Request)
+		/* FIXME: 是否屏蔽列出文件夹内容？
+		info, err := f.Stat()
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		if info.IsDir() {
+			c.Status(http.StatusNotFound)
+			return
+		}*/
+		c.File(path.Join(global.GCoursePath, dir, file))
 	}
 }

@@ -16,13 +16,16 @@ func CreateExp(e *entity.MExperiment, uid string) error {
 		return errors.New("权限不足")
 	}
 	var rs []entity.RCourseStudent
-	global.GDB.Where("course_id = ?", e.CID).Find(&rs)
+	global.GDB.Model(&entity.RCourseStudent{}).Where("course_id = ?", e.CID).Find(&rs)
 
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(e).Error; err != nil {
 			return err
 		}
 		for _, i := range rs {
+			if i.Auth == entity.Owner {
+				continue
+			}
 			if err := tx.Create(&entity.MExperimentSubmit{
 				EID:    e.ID,
 				UID:    i.UserID,
@@ -32,7 +35,7 @@ func CreateExp(e *entity.MExperiment, uid string) error {
 				return err
 			}
 		}
-		return nil
+		return initWorker(e)
 	})
 }
 
@@ -45,6 +48,7 @@ func UpdateExp(e *entity.MExperiment, uid string) error {
 		if err := tx.Save(e).Error; err != nil {
 			return err
 		}
+		updateEndtime(e)
 		return nil
 	})
 }
@@ -78,7 +82,7 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 func GetExpsByCID(cid uint) ([]*entity.ExperimentResponse, error) {
 	var res []entity.MExperiment
 	var resp []*entity.ExperimentResponse
-	global.GDB.Where("c_id = ?", cid).Find(&res)
+	global.GDB.Model(&entity.MExperiment{}).Where("c_id = ?", cid).Find(&res)
 	for _, i := range res {
 		tmp, err := expToResp(&i)
 		if err != nil {
@@ -142,11 +146,11 @@ func Submit(s *entity.MSubmission, uid string) error {
 		if s.UpdatedAt.Before(exp.BeginTime) || s.UpdatedAt.After(exp.EndTime) {
 			return errors.New("不在时间区间")
 		}
-		if err := tx.Where("e_id = ? AND u_id = ?", s.EID, uid).
+		if err := tx.Where("e_id = ? AND uid = ?", s.EID, uid).
 			First(&mid).Error; err != nil {
 			return err
 		}
-		if s.GID != uid {
+		if mid.GID != uid {
 			return errors.New("权限不足")
 		}
 		s.GID = mid.GID
@@ -169,7 +173,7 @@ func Submit(s *entity.MSubmission, uid string) error {
 func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 	var mid entity.MExperimentSubmit
 	var sub entity.MSubmission
-	if err := global.GDB.Where("e_id = ? AND u_id = ?", eid, uid).
+	if err := global.GDB.Where("e_id = ? AND uid = ?", eid, uid).
 		First(&mid).Error; err != nil {
 		return err
 	}
@@ -178,7 +182,8 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 		return err
 	}
 	var groups []entity.MExperimentSubmit
-	if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
+	if err := global.GDB.Model(&entity.MExperimentSubmit{}).
+		Where("e_id = ? AND g_id = ?", eid, mid.GID).
 		Find(&groups).Error; err != nil {
 		return err
 	}

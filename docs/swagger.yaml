@@ -123,6 +123,19 @@ definitions:
       role:
         type: integer
     type: object
+  experiment.SubmissionReq:
+    properties:
+      info:
+        type: string
+      name:
+        type: string
+      readme:
+        type: string
+      type:
+        type: integer
+      url:
+        type: string
+    type: object
   user.emailData:
     properties:
       email:
@@ -244,19 +257,6 @@ paths:
       tags:
       - course
   /course/{cid}/exp:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/entity.ExperimentResponse'
-            type: array
-      summary: 获取课程相关的实验信息
-      tags:
-      - exp
     post:
       parameters:
       - description: Course ID
@@ -276,6 +276,20 @@ paths:
         "200":
           description: ""
       summary: 创建实验 需教师登录
+      tags:
+      - exp
+  /course/{cid}/exps:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.ExperimentResponse'
+            type: array
+      summary: 获取课程相关的实验信息
       tags:
       - exp
   /course/{cid}/student/{uid}:
@@ -375,13 +389,24 @@ paths:
       tags:
       - exp
   /exp/{id}:
-    get:
+    delete:
       produces:
       - application/json
       responses:
         "200":
           description: ""
       summary: 删除指定实验
+      tags:
+      - exp
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.ExperimentResponse'
+      summary: 根据id获取指定实验信息
       tags:
       - exp
     post:
@@ -406,6 +431,18 @@ paths:
       tags:
       - exp
     post:
+      parameters:
+      - description: Exp ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 实验信息
+        in: body
+        name: exp
+        required: true
+        schema:
+          $ref: '#/definitions/experiment.SubmissionReq'
       produces:
       - application/json
       responses:
@@ -414,6 +451,28 @@ paths:
       summary: 提交作业
       tags:
       - exp
+  /file:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: 选择上传文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      summary: 上传文件
+      tags:
+      - file
+  /file/{name}:
+    get:
+      produces:
+      - application/json
+      summary: 获取文件
+      tags:
+      - file
   /img:
     post:
       consumes:
@@ -436,6 +495,13 @@ paths:
       summary: 获取图片
       tags:
       - Img
+  /show/{eid}/{gid}/{filepath}:
+    get:
+      produces:
+      - application/json
+      summary: 图片展示
+      tags:
+      - show
   /terms:
     delete:
       parameters:

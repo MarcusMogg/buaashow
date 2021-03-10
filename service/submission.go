@@ -93,7 +93,20 @@ func worker(dirPath string, file *info) {
 	}
 }
 
-func initWorker(e *entity.MExperiment) {
+func updateEndtime(e *entity.MExperiment) {
+	mutex.Lock()
+	_, ok := m[e.ID]
+	if ok {
+		m[e.ID].endtime = e.EndTime
+		mutex.Unlock()
+	} else {
+		mutex.Unlock()
+		initWorker(e)
+	}
+
+}
+
+func initWorker(e *entity.MExperiment) error {
 	exp := expFile{
 		eid:      e.ID,
 		fileToDo: make(chan info, routineNums*2),
@@ -104,7 +117,7 @@ func initWorker(e *entity.MExperiment) {
 	if _, err := os.Stat(dirPath); err != nil {
 		if err := os.MkdirAll(dirPath, 0755); err != nil {
 			zap.S().Errorf("创建目录失败: %s", err)
-			return
+			return err
 		}
 	}
 	f := func() {
@@ -123,6 +136,7 @@ func initWorker(e *entity.MExperiment) {
 	mutex.Lock()
 	m[e.ID] = &exp
 	mutex.Unlock()
+	return nil
 }
 
 // InitSubmitThread 初始化
@@ -135,7 +149,10 @@ func InitSubmitThread() {
 		Where("end_time >= ?", now.Format(global.TimeTemplateSec)).
 		Find(&exps)
 	for _, j := range exps {
-		initWorker(&j)
+		err := initWorker(&j)
+		if err != nil {
+			zap.S().Fatal(err)
+		}
 	}
 }
 

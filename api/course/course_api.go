@@ -211,20 +211,21 @@ func CreateExp(c *gin.Context) {
 		return
 	}
 	u := claim.(*entity.MUser)
-	cid, err := strconv.ParseUint(c.Param("cid"), 10, 0)
+	cid, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
 		response.FailValidate(c)
+		zap.S().Debug(err)
 		return
 	}
 	var req entity.ExperimentReq
 	if err := c.ShouldBindJSON(&req); err == nil {
 		var begin, end time.Time
-		if begin, err = time.Parse(global.TimeTemplateSec, req.BeginTime); err != nil {
+		if begin, err = time.ParseInLocation(global.TimeTemplateSec, req.BeginTime, time.Local); err != nil {
 			response.FailValidate(c)
 			zap.S().Debug(err)
 			return
 		}
-		if end, err = time.Parse(global.TimeTemplateSec, req.EndTime); err != nil {
+		if end, err = time.ParseInLocation(global.TimeTemplateSec, req.EndTime, time.Local); err != nil {
 			response.FailValidate(c)
 			zap.S().Debug(err)
 			return
@@ -242,7 +243,7 @@ func CreateExp(c *gin.Context) {
 			zap.S().Debug(err)
 			return
 		}
-		response.Ok(c)
+		response.OkWithData(gin.H{"eid": exp.ID}, c)
 	} else {
 		response.FailValidate(c)
 		zap.S().Debug(err)
@@ -254,9 +255,9 @@ func CreateExp(c *gin.Context) {
 // @Summary 获取课程相关的实验信息
 // @Produce application/json
 // @Success 200 {array} entity.ExperimentResponse
-// @Router /course/{cid}/exp [get]
+// @Router /course/{cid}/exps [get]
 func GetExps(c *gin.Context) {
-	cid, err := strconv.ParseUint(c.Param("cid"), 10, 0)
+	cid, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
 		response.FailValidate(c)
 		return

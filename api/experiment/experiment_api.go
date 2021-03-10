@@ -88,12 +88,12 @@ func EditExp(c *gin.Context) {
 	var req entity.ExperimentReq
 	if err := c.ShouldBindJSON(&req); err == nil {
 		var begin, end time.Time
-		if begin, err = time.Parse(global.TimeTemplateSec, req.BeginTime); err != nil {
+		if begin, err = time.ParseInLocation(global.TimeTemplateSec, req.BeginTime, time.Local); err != nil {
 			response.FailValidate(c)
 			zap.S().Debug(err)
 			return
 		}
-		if end, err = time.Parse(global.TimeTemplateSec, req.EndTime); err != nil {
+		if end, err = time.ParseInLocation(global.TimeTemplateSec, req.EndTime, time.Local); err != nil {
 			response.FailValidate(c)
 			zap.S().Debug(err)
 			return
@@ -104,8 +104,7 @@ func EditExp(c *gin.Context) {
 		exp.EndTime = end
 		exp.Resources = strings.Join(req.Resources, ",")
 
-		exp := entity.MExperiment{}
-		if err = service.UpdateExp(&exp, u.Account); err != nil {
+		if err = service.UpdateExp(exp, u.Account); err != nil {
 			response.FailWithMessage(err.Error(), c)
 			zap.S().Debug(err)
 			return
@@ -123,7 +122,7 @@ func EditExp(c *gin.Context) {
 // @Summary 删除指定实验
 // @Produce application/json
 // @Success 200
-// @Router /exp/{id} [get]
+// @Router /exp/{id} [delete]
 func DeleteExp(c *gin.Context) {
 	claim, ok := c.Get("user")
 	if !ok {
@@ -148,6 +147,8 @@ func DeleteExp(c *gin.Context) {
 // @Tags exp
 // @Summary 提交作业
 // @Produce application/json
+// @Param id path int true "Exp ID"
+// @Param exp body SubmissionReq true "实验信息"
 // @Success 200
 // @Router /exp/{id}/submit [post]
 func SubmitExp(c *gin.Context) {
@@ -166,11 +167,10 @@ func SubmitExp(c *gin.Context) {
 	if err := c.ShouldBindJSON(&req); err == nil {
 		now := time.Now()
 		submission := entity.MSubmission{
-			EID:  uint(eid),
-			Name: req.Name,
-			Info: req.Info,
-			Type: req.Type,
-			// TODO: 不是原来的URL，需要展开
+			EID:       uint(eid),
+			Name:      req.Name,
+			Info:      req.Info,
+			Type:      req.Type,
 			URL:       req.URL,
 			Readme:    req.Readme,
 			UpdatedAt: now,

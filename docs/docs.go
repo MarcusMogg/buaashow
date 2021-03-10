@@ -109,26 +109,6 @@ var doc = `{
             }
         },
         "/course/{cid}/exp": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "exp"
-                ],
-                "summary": "获取课程相关的实验信息",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.ExperimentResponse"
-                            }
-                        }
-                    }
-                }
-            },
             "post": {
                 "produces": [
                     "application/json"
@@ -158,6 +138,28 @@ var doc = `{
                 "responses": {
                     "200": {
                         "description": ""
+                    }
+                }
+            }
+        },
+        "/course/{cid}/exps": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "获取课程相关的实验信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.ExperimentResponse"
+                            }
+                        }
                     }
                 }
             }
@@ -318,10 +320,13 @@ var doc = `{
                 "tags": [
                     "exp"
                 ],
-                "summary": "删除指定实验",
+                "summary": "根据id获取指定实验信息",
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.ExperimentResponse"
+                        }
                     }
                 }
             },
@@ -333,6 +338,20 @@ var doc = `{
                     "exp"
                 ],
                 "summary": "修改指定实验",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "删除指定实验",
                 "responses": {
                     "200": {
                         "description": ""
@@ -366,11 +385,63 @@ var doc = `{
                     "exp"
                 ],
                 "summary": "提交作业",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Exp ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "实验信息",
+                        "name": "exp",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/experiment.SubmissionReq"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": ""
                     }
                 }
+            }
+        },
+        "/file": {
+            "post": {
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "上传文件",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "选择上传文件",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        "/file/{name}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "获取文件"
             }
         },
         "/img": {
@@ -405,6 +476,17 @@ var doc = `{
                     "Img"
                 ],
                 "summary": "获取图片"
+            }
+        },
+        "/show/{eid}/{gid}/{filepath}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "show"
+                ],
+                "summary": "图片展示"
             }
         },
         "/terms": {
@@ -882,6 +964,26 @@ var doc = `{
                 },
                 "role": {
                     "type": "integer"
+                }
+            }
+        },
+        "experiment.SubmissionReq": {
+            "type": "object",
+            "properties": {
+                "info": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "readme": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },
