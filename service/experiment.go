@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -154,10 +155,34 @@ func Submit(s *entity.MSubmission, uid string) error {
 			return errors.New("权限不足")
 		}
 		s.GID = mid.GID
-		if err := ToUnzip(s.EID, s.GID, s.URL); err != nil {
-			return err
+		var oldURL struct {
+			OldURL string
 		}
-		s.URL = fmt.Sprintf("show/%d/%s/index.html", s.EID, s.GID)
+		if mid.Status {
+			global.GDB.Model(&entity.MSubmission{}).
+				Where("e_id = ? AND g_id = ?", s.EID, s.GID).
+				Select("old_url").First(&oldURL)
+			zap.S().Debug(oldURL)
+		}
+		// 省略一次操作
+		if oldURL.OldURL != s.URL {
+			if s.Type == entity.HTML {
+				if err := ToUnzip(s.EID, s.GID, s.URL); err != nil {
+					return err
+				}
+			} else if s.Type == entity.EXE {
+				if err := moveExe(s.EID, s.GID, s.URL); err != nil {
+					return err
+				}
+			}
+		}
+		s.OldURL = s.URL
+		if s.Type == entity.HTML {
+			s.URL = fmt.Sprintf("show/%d/%s/index.html", s.EID, s.GID)
+		} else if s.Type == entity.EXE {
+			s.URL = fmt.Sprintf("show/%d/%s/release.zip", s.EID, s.GID)
+		}
+
 		if mid.Status {
 			return tx.Save(s).Error
 		}

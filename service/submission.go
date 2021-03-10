@@ -6,7 +6,9 @@ import (
 	"buaashow/utils"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"sync"
 	"time"
@@ -55,20 +57,17 @@ func clear() {
 	}
 }
 
-// 将压缩包解压至 global.GCoursePath/{eid}/{gid}/show/
-// TODO: 失败时将失败信息写到 global.GCoursePath/{eid}/{gid}/show/index.html
-func worker(dirPath string, file *info) {
-	// 创建作业根目录
-	dir := fmt.Sprintf("%s%s/", dirPath, file.gid)
+// 创建文件夹 如果文件夹存在则清空内容
+func createDir(dir string) error {
 	s, err := os.Open(dir)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			zap.S().Errorf("神必异常: %s", err)
-			return
+			return err
 		}
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			zap.S().Errorf("创建目录失败: %s", err)
-			return
+			return err
 		}
 	} else {
 		defer s.Close()
@@ -76,20 +75,31 @@ func worker(dirPath string, file *info) {
 		names, err := s.Readdirnames(-1)
 		if err != nil {
 			zap.S().Errorf("神必异常: %s", err)
-			return
+			return err
 		}
 		for _, name := range names {
 			err = os.RemoveAll(filepath.Join(dir, name))
 			if err != nil {
 				zap.S().Errorf("神必异常: %s", err)
-				return
+				return err
 			}
 		}
 	}
-	err = utils.UnZip(file.tmpPath, filepath.Join(dir, "show"))
+	return nil
+}
+
+// 将压缩包解压至 global.GCoursePath/{eid}/{gid}/show/
+// TODO: 失败时将失败信息写到 global.GCoursePath/{eid}/{gid}/show/index.html
+func worker(dirPath string, file *info) {
+	// 创建作业根目录
+	dir := fmt.Sprintf("%s%s/show", dirPath, file.gid)
+	err := createDir(dir)
+	if err != nil {
+		return
+	}
+	err = utils.UnZip(file.tmpPath, dir)
 	if err != nil {
 		zap.S().Errorf("解压错误 %s\n", err.Error())
-		return
 	}
 }
 
@@ -172,4 +182,43 @@ func ToUnzip(eid uint, gid string, file string) error {
 		tmpPath: filepath.Join(global.GTmpPath, file),
 	}
 	return nil
+}
+
+func copy(src, dst string) error {
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer destination.Close()
+	_, err = io.Copy(destination, source)
+	return err
+}
+
+func moveExe(eid uint, gid string, file string) error {
+	filetype := path.Ext(file)
+	if filetype != ".zip" {
+		return errors.New("不支持的类型")
+	}
+	curP := filepath.Join(global.GTmpPath, file)
+	dirPath := fmt.Sprintf("%s%d/", global.GCoursePath, eid)
+	dir := fmt.Sprintf("%s%s/show/", dirPath, gid)
+	if err := createDir(dir); err != nil {
+		return err
+	}
+	return copy(curP, filepath.Join(dir, "release.zip"))
 }

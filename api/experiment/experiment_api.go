@@ -166,6 +166,10 @@ func SubmitExp(c *gin.Context) {
 	var req SubmissionReq
 	if err := c.ShouldBindJSON(&req); err == nil {
 		now := time.Now()
+		if req.Type < entity.HTML || req.Type > entity.URL {
+			response.FailWithMessage("类型错误", c)
+			return
+		}
 		submission := entity.MSubmission{
 			EID:       uint(eid),
 			Name:      req.Name,
