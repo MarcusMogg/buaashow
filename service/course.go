@@ -23,21 +23,21 @@ func checkMCourseAuth(cid uint, uid string, auth entity.CourseAuth) bool {
 }
 
 // CreateCourse 创建课程，并创建教师与课程之间的关联
-func CreateCourse(term *entity.Term, course *entity.MCourse, user *entity.MUser) error {
+func CreateCourse(course *entity.MCourse, user *entity.MUser) (*entity.CourseResp, error) {
 	relation := entity.RCourseStudent{
 		UserID: user.Account,
 		Auth:   entity.Owner,
 	}
-	t := &entity.MTerm{
-		Term: (*term),
-	}
-	return global.GDB.Transaction(func(tx *gorm.DB) error {
-		result := tx.Where("year = ? and season = ?", t.Year, t.Season).
-			First(t)
+	var t entity.MTerm
+	if err := global.GDB.Transaction(func(tx *gorm.DB) error {
+		result := tx.Where("t_id = ?", course.TID).First(&t)
 		if result.Error != nil {
 			return errors.New("该学期不存在")
 		}
-		course.TID = t.ID
+		result = tx.Where("name = ?", course.Name).First(&entity.MCourseName{})
+		if result.Error != nil {
+			return errors.New("课程名称不存在")
+		}
 		if err := tx.Create(course).Error; err != nil {
 			zap.S().Debug(err)
 			return err
@@ -48,14 +48,30 @@ func CreateCourse(term *entity.Term, course *entity.MCourse, user *entity.MUser)
 			zap.S().Debug(err)
 		}
 		return err
-	})
+	}); err != nil {
+		return nil, err
+	}
+	return &entity.CourseResp{
+		ID:   course.ID,
+		Name: course.Name,
+		Info: course.Info,
+		Term: entity.Term{
+			TID:   course.TID,
+			TName: t.TName,
+			Begin: t.Begin.Format(global.TimeTemplateDay),
+			End:   t.End.Format(global.TimeTemplateDay),
+		},
+	}, nil
 }
 
 // GetMyCourses 获取与用户相关的课程信息
-func GetMyCourses(user *entity.MUser) []entity.CourseResp {
-	var res []entity.CourseResp
+func GetMyCourses(user *entity.MUser) []*entity.CourseResp {
+	var res []*entity.CourseResp
 	global.GDB.Model(&entity.MCourse{}).
-		Select("m_courses.id,m_courses.name,m_courses.info,m_terms.year,m_terms.season").
+		Select(`m_courses.id,m_courses.name,m_courses.info,m_courses.t_id, 
+			m_terms.t_name,
+			date_format(m_terms.begin,'%Y-%m-%d') as begin,
+			date_format(m_terms.end,'%Y-%m-%d') as end`).
 		Joins("INNER JOIN r_course_students ON r_course_students.course_id = m_courses.id").
 		Joins("INNER JOIN m_terms ON m_courses.t_id = m_terms.ID").
 		Where("r_course_students.user_id = ?", user.Account).
@@ -67,7 +83,10 @@ func GetMyCourses(user *entity.MUser) []entity.CourseResp {
 func GetCourseInfoByID(id uint) (*entity.CourseResp, error) {
 	var res entity.CourseResp
 	result := global.GDB.Model(&entity.MCourse{}).
-		Select("m_courses.id,m_courses.name,m_courses.info,m_terms.year,m_terms.season").
+		Select(`m_courses.id,m_courses.name,m_courses.info,m_courses.t_id, 
+				m_terms.t_name,
+				date_format(m_terms.begin,'%Y-%m-%d') as begin,
+				date_format(m_terms.end,'%Y-%m-%d') as end`).
 		Joins("INNER JOIN m_terms ON m_courses.t_id = m_terms.ID").
 		Where("m_courses.id = ?", id).
 		First(&res)

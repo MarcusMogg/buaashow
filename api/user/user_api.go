@@ -4,6 +4,7 @@ import (
 	"buaashow/entity"
 	"buaashow/response"
 	"buaashow/service"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -19,7 +20,7 @@ import (
 // @Router /user/login [post]
 func LoginByPwd(c *gin.Context) {
 	var r loginData
-	if err := c.BindJSON(&r); err == nil {
+	if err := c.ShouldBindJSON(&r); err == nil {
 		user := &entity.MUser{Account: r.Account, Password: r.Password}
 		// TODO: Use verification code when login
 		if service.Login(user) {
@@ -43,7 +44,7 @@ func LoginByPwd(c *gin.Context) {
 // @Router /user/verify [post]
 func LoginByTicket(c *gin.Context) {
 	var r loginTicketData
-	if err := c.BindJSON(&r); err == nil {
+	if err := c.ShouldBindJSON(&r); err == nil {
 		user, err := ticketVerify(r.Authorization, r.ServiceURL)
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
@@ -116,7 +117,7 @@ func UpdateEmail(c *gin.Context) {
 	}
 	u := claim.(*entity.MUser)
 	var email emailData
-	if err := c.BindJSON(&email); err == nil {
+	if err := c.ShouldBindJSON(&email); err == nil {
 		err = service.UpdateEmail(u, email.Email)
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
@@ -144,7 +145,7 @@ func UpdatePassword(c *gin.Context) {
 	}
 	u := claim.(*entity.MUser)
 	var pass passwordData
-	if err := c.BindJSON(&pass); err == nil {
+	if err := c.ShouldBindJSON(&pass); err == nil {
 		err = service.UpdatePassword(u, pass.OldPassword, pass.NewPassword)
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
@@ -158,14 +159,14 @@ func UpdatePassword(c *gin.Context) {
 
 // CreateTeacher gdoc
 // @Tags User
-// @Summary 创建教师账号 需管理员登录
+// @Summary 创建教师账号 only ADMIN
 // @accept application/json
 // @Produce application/json
 // @Param logindata body registerData true "账号密码必选，邮箱可选"
 // @Router /user/teacher [post]
 func CreateTeacher(c *gin.Context) {
 	var r registerData
-	if err := c.BindJSON(&r); err == nil {
+	if err := c.ShouldBindJSON(&r); err == nil {
 
 		user := &entity.MUser{
 			Account:  r.Account,
@@ -185,4 +186,47 @@ func CreateTeacher(c *gin.Context) {
 		zap.S().Debug(err.Error())
 	}
 
+}
+
+// GetUserInfoList gdoc
+// @Tags User
+// @Summary 获取用户列表，only ADMIN
+// @Produce application/json
+// @Param page query int false "page number"
+// @Param account query string false "account target"
+// @Success 200 {array} entity.UserInfoRes
+// @Router /user/infolist [get]
+func GetUserInfoList(c *gin.Context) {
+	pageStr := c.DefaultQuery("page", "0")
+	page, err := strconv.ParseUint(pageStr, 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	ac := c.Query("account")
+	size := 16
+	tot, res, err := service.GetUserInfoList(int(page), size, ac)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	response.OkWithData(gin.H{
+		"tot":   tot,
+		"users": res,
+	}, c)
+}
+
+// DeleteUser gdoc
+// @Tags user
+// @Summary 删除一个用户 only ADMIN
+// @Router /user/del/{id} [delete]
+func DeleteUser(c *gin.Context) {
+	name := c.Param("id")
+	err := service.DeleteUser(name)
+	if err == nil {
+		response.Ok(c)
+	} else {
+		zap.S().Debug(err.Error())
+		response.Fail(c)
+	}
 }

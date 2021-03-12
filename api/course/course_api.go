@@ -34,13 +34,8 @@ func CreateCourse(c *gin.Context) {
 			Name: req.Name,
 			Info: req.Info,
 		}
-		if err = service.CreateCourse(&req.Term, &course, u); err == nil {
-			response.OkWithData(entity.CourseResp{
-				ID:   course.ID,
-				Term: req.Term,
-				Name: req.Name,
-				Info: req.Info,
-			}, c)
+		if resp, err := service.CreateCourse(&course, u); err == nil {
+			response.OkWithData(resp, c)
 		} else {
 			response.FailWithMessage(err.Error(), c)
 		}

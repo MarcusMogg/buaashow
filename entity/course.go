@@ -1,20 +1,27 @@
 package entity
 
-import (
-	"gorm.io/gorm"
-)
+import "time"
 
 // Term 学期
 type Term struct {
-	Year   int `json:"year" binding:"required"`
-	Season int `json:"season" binding:"required,gte=1,lte=2"`
+	TID   uint   `json:"tid"`
+	TName string `json:"tname" binding:"required"`
+	Begin string `json:"tbegin"`
+	End   string `json:"tend"`
 }
 
 // MTerm 学期
 // Season 1 春 2 秋
 type MTerm struct {
-	gorm.Model `json:"-"`
-	Term
+	ID    uint `gorm:"primarykey"`
+	TName string
+	Begin time.Time
+	End   time.Time
+}
+
+// MCourseName 限定课程名称，用于展示
+type MCourseName struct {
+	Name string `gorm:"primarykey"`
 }
 
 // MCourse 课程信息

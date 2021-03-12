@@ -20,5 +20,8 @@ func InitRouter(Router *gin.RouterGroup) {
 		UserRouter.GET("info/:id", GetUserInfoByID)
 
 		UserRouter.POST("teacher", middleware.JWTAuth(entity.Admin), CreateTeacher)
+
+		UserRouter.GET("infolist", middleware.JWTAuth(entity.Admin), GetUserInfoList)
+		UserRouter.DELETE("del/:id", middleware.JWTAuth(entity.Admin), DeleteUser)
 	}
 }

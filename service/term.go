@@ -3,7 +3,7 @@ package service
 import (
 	"buaashow/entity"
 	"buaashow/global"
-	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -12,37 +12,46 @@ import (
 
 // CreateTerm 创建一个新学期
 func CreateTerm(term *entity.Term) error {
+	begin, err := time.ParseInLocation(global.TimeTemplateDay, term.Begin, time.Local)
+	if err != nil {
+		return err
+	}
+	end, err := time.ParseInLocation(global.TimeTemplateDay, term.End, time.Local)
+	if err != nil {
+		return err
+	}
 	t := &entity.MTerm{
-		Term: (*term),
+		TName: term.TName,
+		Begin: begin,
+		End:   end,
 	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
-		result := tx.Where("year = ? and season = ?", t.Year, t.Season).
-			First(&entity.MTerm{})
-		if result.Error == nil {
-			return errors.New("该学期已存在")
+		err := tx.Create(t).Error
+		if err != nil {
+			return err
 		}
-		return tx.Create(t).Error
+		term.TID = t.ID
+		return nil
 	})
 }
 
 // DeleteTerm 删除一个学期
-func DeleteTerm(term *entity.Term) error {
-	t := &entity.MTerm{
-		Term: (*term),
+func DeleteTerm(id uint) error {
+	t := entity.MTerm{
+		ID: id,
 	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
-		result := tx.Where("year = ? and season = ?", t.Year, t.Season).
-			First(t)
-		if result.Error != nil {
-			return errors.New("该学期不存在")
-		}
-		return tx.Delete(t).Error
+		return tx.Delete(&t).Error
 	})
 }
 
 // GetTerms 获取从某年开始的所有学期
-func GetTerms(year int) (res []entity.Term) {
+func GetTerms(year int) (res []*entity.Term) {
+	begin := time.Date(year, time.January, 1, 0, 0, 0, 0, time.Local)
 	global.GDB.Model(&entity.MTerm{}).
-		Where("year >= ?", year).Find(&res)
+		Select(`id as t_id,t_name,
+			date_format(begin,'%Y-%m-%d') as begin,
+			date_format(end,'%Y-%m-%d') as end`).
+		Where("begin >= ?", begin.Format(global.TimeTemplateDay)).Find(&res)
 	return res
 }

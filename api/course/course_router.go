@@ -22,8 +22,18 @@ func InitRouter(Router *gin.RouterGroup) {
 		CourseRouter.DELETE(":cid", middleware.JWTAuth(entity.Teacher), DeleteCourse)
 	}
 
-	Router.GET("terms", middleware.JWTAuth(entity.Student), GetTerms)
-	Router.GET("terms/all", GetAllTerms)
-	Router.POST("terms", middleware.JWTAuth(entity.Admin), CreateTerm)
-	Router.DELETE("terms", middleware.JWTAuth(entity.Admin), DeleteTerm)
+	tr := Router.Group("terms")
+	{
+		tr.GET("", middleware.JWTAuth(entity.Student), GetTerms)
+		tr.GET("all", GetAllTerms)
+		tr.POST("", middleware.JWTAuth(entity.Admin), CreateTerm)
+		tr.DELETE(":tid", middleware.JWTAuth(entity.Admin), DeleteTerm)
+	}
+
+	cr := Router.Group("coursename")
+	{
+		cr.POST(":name", middleware.JWTAuth(entity.Admin), CreateCourseName)
+		cr.DELETE(":name", middleware.JWTAuth(entity.Admin), DeleteCourseName)
+		cr.GET("", GetCourseNames)
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"buaashow/global"
 	"buaashow/utils"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -59,4 +60,23 @@ func UpdatePassword(user *entity.MUser, oldPassword, newPassword string) error {
 		}
 		return tx.Model(user).Update("password", newPassword).Error
 	})
+}
+
+//GetUserInfoList 查询用户列表
+func GetUserInfoList(page, pageSize int, account string) (int, []*entity.UserInfoRes, error) {
+	var res []*entity.UserInfoRes
+	offset := (page - 1) * pageSize
+	var tot int64
+	err := global.GDB.Model(&entity.MUser{}).
+		Where("account LIKE ? AND role != ?", fmt.Sprintf("%%%s%%", account), entity.Admin).
+		Select("account,role,name,email").
+		Count(&tot).Offset(offset).Limit(pageSize).Find(&res).Error
+	return int(tot), res, err
+}
+
+// DeleteUser 删除用户
+func DeleteUser(account string) error {
+	return global.GDB.Delete(&entity.MUser{
+		Account: account,
+	}).Error
 }

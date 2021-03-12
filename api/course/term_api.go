@@ -4,6 +4,7 @@ import (
 	"buaashow/entity"
 	"buaashow/response"
 	"buaashow/service"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -36,7 +37,7 @@ func CreateTerm(c *gin.Context) {
 	var t entity.Term
 	if err := c.ShouldBindJSON(&t); err == nil {
 		if err = service.CreateTerm(&t); err == nil {
-			response.Ok(c)
+			response.OkWithData(t, c)
 		} else {
 			response.FailWithMessage(err.Error(), c)
 		}
@@ -52,19 +53,19 @@ func CreateTerm(c *gin.Context) {
 // @Summary 删除一个学期,需管理员登录，注意，会同步删除该学期相关的所有课程、实验
 // @Produce application/json
 // @Param newTermData body entity.Term true "学期信息"
-// @Router /terms [delete]
+// @Router /terms/{tid} [delete]
 func DeleteTerm(c *gin.Context) {
-	var t entity.Term
-	if err := c.ShouldBindJSON(&t); err == nil {
-		if err = service.DeleteTerm(&t); err == nil {
-			response.Ok(c)
-		} else {
-			response.FailWithMessage(err.Error(), c)
-		}
-	} else {
+	tid, err := strconv.ParseUint(c.Param("tid"), 10, 0)
+	if err != nil {
 		response.FailValidate(c)
-		zap.S().Debug(err)
+		return
 	}
+	if err = service.DeleteTerm(uint(tid)); err == nil {
+		response.Ok(c)
+	} else {
+		response.FailWithMessage(err.Error(), c)
+	}
+
 }
 
 // GetAllTerms gdoc

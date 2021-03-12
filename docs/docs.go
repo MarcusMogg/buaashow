@@ -290,6 +290,28 @@ var doc = `{
                 }
             }
         },
+        "/coursename": {
+            "get": {
+                "tags": [
+                    "coursename"
+                ],
+                "summary": "获取coursenames"
+            }
+        },
+        "/coursename/{name}": {
+            "post": {
+                "tags": [
+                    "coursename"
+                ],
+                "summary": "添加一个coursename only ADMIN"
+            },
+            "delete": {
+                "tags": [
+                    "coursename"
+                ],
+                "summary": "添加一个coursename only ADMIN"
+            }
+        },
         "/exp": {
             "get": {
                 "produces": [
@@ -529,26 +551,6 @@ var doc = `{
                         }
                     }
                 ]
-            },
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "term"
-                ],
-                "summary": "删除一个学期,需管理员登录，注意，会同步删除该学期相关的所有课程、实验",
-                "parameters": [
-                    {
-                        "description": "学期信息",
-                        "name": "newTermData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entity.Term"
-                        }
-                    }
-                ]
             }
         },
         "/terms/all": {
@@ -571,6 +573,36 @@ var doc = `{
                         }
                     }
                 }
+            }
+        },
+        "/terms/{tid}": {
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "term"
+                ],
+                "summary": "删除一个学期,需管理员登录，注意，会同步删除该学期相关的所有课程、实验",
+                "parameters": [
+                    {
+                        "description": "学期信息",
+                        "name": "newTermData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Term"
+                        }
+                    }
+                ]
+            }
+        },
+        "/user/del/{id}": {
+            "delete": {
+                "tags": [
+                    "user"
+                ],
+                "summary": "删除一个用户 only ADMIN"
             }
         },
         "/user/email": {
@@ -656,6 +688,42 @@ var doc = `{
                 }
             }
         },
+        "/user/infolist": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "获取用户列表，only ADMIN",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "account target",
+                        "name": "account",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.UserInfoRes"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/user/login": {
             "post": {
                 "consumes": [
@@ -733,7 +801,7 @@ var doc = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "创建教师账号 需管理员登录",
+                "summary": "创建教师账号 only ADMIN",
                 "parameters": [
                     {
                         "description": "账号密码必选，邮箱可选",
@@ -785,9 +853,7 @@ var doc = `{
         "course.courseData": {
             "type": "object",
             "required": [
-                "name",
-                "season",
-                "year"
+                "name"
             ],
             "properties": {
                 "info": {
@@ -796,10 +862,7 @@ var doc = `{
                 "name": {
                     "type": "string"
                 },
-                "season": {
-                    "type": "integer"
-                },
-                "year": {
+                "tid": {
                     "type": "integer"
                 }
             }
@@ -821,8 +884,7 @@ var doc = `{
         "entity.CourseResp": {
             "type": "object",
             "required": [
-                "season",
-                "year"
+                "tname"
             ],
             "properties": {
                 "cid": {
@@ -834,11 +896,17 @@ var doc = `{
                 "name": {
                     "type": "string"
                 },
-                "season": {
+                "tbegin": {
+                    "type": "string"
+                },
+                "tend": {
+                    "type": "string"
+                },
+                "tid": {
                     "type": "integer"
                 },
-                "year": {
-                    "type": "integer"
+                "tname": {
+                    "type": "string"
                 }
             }
         },
@@ -938,15 +1006,20 @@ var doc = `{
         "entity.Term": {
             "type": "object",
             "required": [
-                "season",
-                "year"
+                "tname"
             ],
             "properties": {
-                "season": {
+                "tbegin": {
+                    "type": "string"
+                },
+                "tend": {
+                    "type": "string"
+                },
+                "tid": {
                     "type": "integer"
                 },
-                "year": {
-                    "type": "integer"
+                "tname": {
+                    "type": "string"
                 }
             }
         },

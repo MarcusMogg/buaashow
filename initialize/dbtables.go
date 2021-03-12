@@ -19,6 +19,7 @@ func DBTables() {
 
 	global.GDB.AutoMigrate(&entity.MTerm{})
 	global.GDB.AutoMigrate(&entity.MCourse{})
+	global.GDB.AutoMigrate(&entity.MCourseName{})
 	global.GDB.AutoMigrate(&entity.RCourseStudent{})
 	global.GDB.AutoMigrate(&entity.MExperiment{})
 	global.GDB.AutoMigrate(&entity.MExperimentSubmit{})

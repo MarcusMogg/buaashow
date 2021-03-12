@@ -6,14 +6,10 @@ definitions:
         type: string
       name:
         type: string
-      season:
-        type: integer
-      year:
+      tid:
         type: integer
     required:
     - name
-    - season
-    - year
     type: object
   course.studentsData:
     properties:
@@ -32,13 +28,16 @@ definitions:
         type: string
       name:
         type: string
-      season:
+      tbegin:
+        type: string
+      tend:
+        type: string
+      tid:
         type: integer
-      year:
-        type: integer
+      tname:
+        type: string
     required:
-    - season
-    - year
+    - tname
     type: object
   entity.ExperimentReq:
     properties:
@@ -104,13 +103,16 @@ definitions:
     type: object
   entity.Term:
     properties:
-      season:
+      tbegin:
+        type: string
+      tend:
+        type: string
+      tid:
         type: integer
-      year:
-        type: integer
+      tname:
+        type: string
     required:
-    - season
-    - year
+    - tname
     type: object
   entity.UserInfoRes:
     properties:
@@ -374,6 +376,20 @@ paths:
       summary: 导入学生, 需用户登录，当前用户有课程管理权限
       tags:
       - course
+  /coursename:
+    get:
+      summary: 获取coursenames
+      tags:
+      - coursename
+  /coursename/{name}:
+    delete:
+      summary: 添加一个coursename only ADMIN
+      tags:
+      - coursename
+    post:
+      summary: 添加一个coursename only ADMIN
+      tags:
+      - coursename
   /exp:
     get:
       produces:
@@ -503,19 +519,6 @@ paths:
       tags:
       - show
   /terms:
-    delete:
-      parameters:
-      - description: 学期信息
-        in: body
-        name: newTermData
-        required: true
-        schema:
-          $ref: '#/definitions/entity.Term'
-      produces:
-      - application/json
-      summary: 删除一个学期,需管理员登录，注意，会同步删除该学期相关的所有课程、实验
-      tags:
-      - term
     get:
       produces:
       - application/json
@@ -542,6 +545,20 @@ paths:
       summary: 新增一个学期,需管理员登录,season 1春 2秋
       tags:
       - term
+  /terms/{tid}:
+    delete:
+      parameters:
+      - description: 学期信息
+        in: body
+        name: newTermData
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Term'
+      produces:
+      - application/json
+      summary: 删除一个学期,需管理员登录，注意，会同步删除该学期相关的所有课程、实验
+      tags:
+      - term
   /terms/all:
     get:
       produces:
@@ -556,6 +573,11 @@ paths:
       summary: 获取所有学期信息
       tags:
       - term
+  /user/del/{id}:
+    delete:
+      summary: 删除一个用户 only ADMIN
+      tags:
+      - user
   /user/email:
     post:
       consumes:
@@ -607,6 +629,29 @@ paths:
           schema:
             $ref: '#/definitions/entity.UserInfoRes'
       summary: 获取指定id(account)的用户信息
+      tags:
+      - User
+  /user/infolist:
+    get:
+      parameters:
+      - description: page number
+        in: query
+        name: page
+        type: integer
+      - description: account target
+        in: query
+        name: account
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.UserInfoRes'
+            type: array
+      summary: 获取用户列表，only ADMIN
       tags:
       - User
   /user/login:
@@ -664,7 +709,7 @@ paths:
           $ref: '#/definitions/user.registerData'
       produces:
       - application/json
-      summary: 创建教师账号 需管理员登录
+      summary: 创建教师账号 only ADMIN
       tags:
       - User
   /user/verify:
