@@ -30,7 +30,7 @@ func CreateCourse(course *entity.MCourse, user *entity.MUser) (*entity.CourseRes
 	}
 	var t entity.MTerm
 	if err := global.GDB.Transaction(func(tx *gorm.DB) error {
-		result := tx.Where("t_id = ?", course.TID).First(&t)
+		result := tx.Where("id = ?", course.TID).First(&t)
 		if result.Error != nil {
 			return errors.New("该学期不存在")
 		}
@@ -52,9 +52,10 @@ func CreateCourse(course *entity.MCourse, user *entity.MUser) (*entity.CourseRes
 		return nil, err
 	}
 	return &entity.CourseResp{
-		ID:   course.ID,
-		Name: course.Name,
-		Info: course.Info,
+		ID:      course.ID,
+		Name:    course.Name,
+		Info:    course.Info,
+		Teacher: course.Teacher,
 		Term: entity.Term{
 			TID:   course.TID,
 			TName: t.TName,
@@ -68,7 +69,8 @@ func CreateCourse(course *entity.MCourse, user *entity.MUser) (*entity.CourseRes
 func GetMyCourses(user *entity.MUser) []*entity.CourseResp {
 	var res []*entity.CourseResp
 	global.GDB.Model(&entity.MCourse{}).
-		Select(`m_courses.id,m_courses.name,m_courses.info,m_courses.t_id, 
+		Select(`m_courses.id,m_courses.name,m_courses.info,m_courses.teacher,
+			m_courses.t_id, 
 			m_terms.t_name,
 			date_format(m_terms.begin,'%Y-%m-%d') as begin,
 			date_format(m_terms.end,'%Y-%m-%d') as end`).
@@ -83,7 +85,8 @@ func GetMyCourses(user *entity.MUser) []*entity.CourseResp {
 func GetCourseInfoByID(id uint) (*entity.CourseResp, error) {
 	var res entity.CourseResp
 	result := global.GDB.Model(&entity.MCourse{}).
-		Select(`m_courses.id,m_courses.name,m_courses.info,m_courses.t_id, 
+		Select(`m_courses.id,m_courses.name,m_courses.info,m_courses.teacher,
+				m_courses.t_id, 
 				m_terms.t_name,
 				date_format(m_terms.begin,'%Y-%m-%d') as begin,
 				date_format(m_terms.end,'%Y-%m-%d') as end`).

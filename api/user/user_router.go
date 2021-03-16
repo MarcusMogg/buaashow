@@ -24,4 +24,9 @@ func InitRouter(Router *gin.RouterGroup) {
 		UserRouter.GET("infolist", middleware.JWTAuth(entity.Admin), GetUserInfoList)
 		UserRouter.DELETE("del/:id", middleware.JWTAuth(entity.Admin), DeleteUser)
 	}
+	tr := Router.Group("test")
+	{
+		tr.POST("admin", middleware.JWTAuth(entity.Admin), TestAdmin)
+		tr.POST("user", middleware.JWTAuth(entity.Student), TestUser)
+	}
 }

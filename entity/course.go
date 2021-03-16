@@ -32,13 +32,16 @@ type MCourse struct {
 	TID  uint
 	Name string
 	Info string
+	// Teacher Account
+	Teacher string
 }
 
 // CourseResp 接口返回的课程信息
 type CourseResp struct {
-	ID   uint   `json:"cid"`
-	Name string `json:"name"`
-	Info string `json:"info"`
+	ID      uint   `json:"cid"`
+	Name    string `json:"name"`
+	Info    string `json:"info"`
+	Teacher string `json:"teacher"`
 	Term
 }
 

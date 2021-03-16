@@ -31,8 +31,10 @@ func CreateCourse(c *gin.Context) {
 	var req courseData
 	if err := c.ShouldBindJSON(&req); err == nil {
 		course := entity.MCourse{
-			Name: req.Name,
-			Info: req.Info,
+			Name:    req.Name,
+			Info:    req.Info,
+			Teacher: u.Account,
+			TID:     req.TID,
 		}
 		if resp, err := service.CreateCourse(&course, u); err == nil {
 			response.OkWithData(resp, c)

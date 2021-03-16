@@ -230,3 +230,19 @@ func DeleteUser(c *gin.Context) {
 		response.Fail(c)
 	}
 }
+
+// TestAdmin gdoc
+// @Tags user
+// @Summary 测试管理员token
+// @Router /test/admin [post]
+func TestAdmin(c *gin.Context) {
+	response.Ok(c)
+}
+
+// TestUser gdoc
+// @Tags user
+// @Summary 测试用户token
+// @Router /test/user [post]
+func TestUser(c *gin.Context) {
+	response.Ok(c)
+}

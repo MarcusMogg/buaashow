@@ -31,6 +31,12 @@ func config() {
 		zap.S().Error(err)
 	}
 	zap.S().Debug(global.GConfig)
+	global.GResourcesPath = global.GConfig.Static
+	global.GImgPath = global.GResourcesPath + "img/"
+	global.GStaticPath = global.GResourcesPath + "static/"
+	global.GCoursePath = global.GResourcesPath + "course/"
+	global.GTmpPath = global.GResourcesPath + "tmp/"
+
 	global.GVP = v
 }
 

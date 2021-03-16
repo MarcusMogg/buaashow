@@ -47,6 +47,7 @@ type MSubmission struct {
 	Type      SummitType
 	URL       string
 	OldURL    string
+	DocsURL   string
 	Readme    string
 	UpdatedAt time.Time
 }

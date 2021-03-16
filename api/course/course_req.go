@@ -2,9 +2,9 @@ package course
 
 // for create course
 type courseData struct {
-	Name string `json:"name" binding:"required,gte=4,lte=32"`
+	Name string `json:"name" binding:"required"`
 	Info string `json:"info"`
-	TID  uint   `json:"tid"`
+	TID  uint   `json:"tid" binding:"required"`
 }
 
 // TODO：add name
