@@ -18,5 +18,9 @@ func InitRouter(Router *gin.RouterGroup) {
 		CourseRouter.POST(":id/submit", middleware.JWTAuth(entity.Student), SubmitExp)
 		CourseRouter.GET(":id/submit", middleware.JWTAuth(entity.Student), SubmitInfo)
 		//TODO: statistics for teacher
+		CourseRouter.GET(":id/dd", middleware.JWTAuth(entity.Student), SubmitInfo)
+
+		CourseRouter.GET(":id/stat", middleware.JWTAuth(entity.Teacher), SubmitInfo)
+		CourseRouter.GET(":id/dda", middleware.JWTAuth(entity.Teacher), SubmitInfo)
 	}
 }

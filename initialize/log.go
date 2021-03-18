@@ -13,7 +13,7 @@ func loggerInit() {
 	logger, err := cfg.Build(zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))*/
 	logger, err := zap.NewDevelopment(zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
 	if err != nil {
-		panic(fmt.Errorf("Fatal error logger: %s", err))
+		panic(fmt.Errorf("fatal error logger: %s", err.Error()))
 	}
 	zap.ReplaceGlobals(logger)
 }
