@@ -13,14 +13,16 @@ func InitRouter(Router *gin.RouterGroup) {
 	{
 		CourseRouter.GET("", middleware.JWTAuth(entity.Student), GetMyExps)
 		CourseRouter.POST(":id", middleware.JWTAuth(entity.Teacher), EditExp)
+		CourseRouter.POST(":id/file", middleware.JWTAuth(entity.Teacher), AddExpFile)
+		CourseRouter.DELETE(":id/file/:filename", middleware.JWTAuth(entity.Teacher), DeleteExpFile)
 		CourseRouter.DELETE(":id", middleware.JWTAuth(entity.Teacher), DeleteExp)
 		CourseRouter.GET(":id", GetExp)
 		CourseRouter.POST(":id/submit", middleware.JWTAuth(entity.Student), SubmitExp)
 		CourseRouter.GET(":id/submit", middleware.JWTAuth(entity.Student), SubmitInfo)
-		//TODO: statistics for teacher
-		CourseRouter.GET(":id/dd", middleware.JWTAuth(entity.Student), SubmitInfo)
+
+		CourseRouter.GET(":id/dl", middleware.JWTAuth(entity.Student), SubmitInfo)
 
 		CourseRouter.GET(":id/stat", middleware.JWTAuth(entity.Teacher), SubmitInfo)
-		CourseRouter.GET(":id/dda", middleware.JWTAuth(entity.Teacher), SubmitInfo)
+		CourseRouter.GET(":id/dlall", middleware.JWTAuth(entity.Teacher), SubmitInfo)
 	}
 }

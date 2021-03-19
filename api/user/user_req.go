@@ -17,6 +17,11 @@ type emailData struct {
 	Email string `form:"email" json:"email" binding:"required,email"`
 }
 
+// nameData for update name
+type nameData struct {
+	Name string `json:"name" binding:"required"`
+}
+
 // PasswordData for update password
 type passwordData struct {
 	OldPassword string `form:"old" json:"old" binding:"required"`

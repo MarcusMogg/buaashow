@@ -129,6 +129,34 @@ func UpdateEmail(c *gin.Context) {
 	}
 }
 
+// UpdateEmail gdoc
+// @Tags User
+// @Summary 修改name, 需用户登录
+// @accept application/json
+// @Produce application/json
+// @Param ticket body nameData true "新name"
+// @Success 200 {object} loginRes
+// @Router /user/name [post]
+func UpdateName(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	var name nameData
+	if err := c.ShouldBindJSON(&name); err == nil {
+		err = service.UpdateName(u, name.Name)
+		if err != nil {
+			response.FailWithMessage(err.Error(), c)
+		} else {
+			response.Ok(c)
+		}
+	} else {
+		response.FailValidate(c)
+	}
+}
+
 // UpdatePassword gdoc
 // @Tags User
 // @Summary 修改密码, 需用户登录

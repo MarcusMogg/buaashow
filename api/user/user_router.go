@@ -14,6 +14,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		UserRouter.POST("login", LoginByPwd)
 		UserRouter.POST("verify", LoginByTicket)
 		UserRouter.POST("email", middleware.JWTAuth(entity.Student), UpdateEmail)
+		UserRouter.POST("name", middleware.JWTAuth(entity.Student), UpdateName)
 		UserRouter.POST("password", middleware.JWTAuth(entity.Student), UpdatePassword)
 
 		UserRouter.GET("info", middleware.JWTAuth(entity.Student), GetUserInfo)

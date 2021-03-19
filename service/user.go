@@ -45,6 +45,16 @@ func UpdateEmail(user *entity.MUser, email string) error {
 	})
 }
 
+// UpdateNmae 修改名字
+func UpdateName(user *entity.MUser, name string) error {
+	if len(name) == 0 {
+		return errors.New("不能为空")
+	}
+	return global.GDB.Transaction(func(tx *gorm.DB) error {
+		return tx.Model(&user).Update("name", name).Error
+	})
+}
+
 // UpdatePassword 修改密码
 func UpdatePassword(user *entity.MUser, oldPassword, newPassword string) error {
 	oldPassword = utils.AesEncrypt(oldPassword)

@@ -222,3 +222,52 @@ func moveExe(eid uint, gid string, file string) error {
 	}
 	return copy(curP, filepath.Join(dir, "release.zip"))
 }
+
+func DownloadSubmission(eid uint, uid string) (string, error) {
+	var mid entity.MExperimentSubmit
+	if err := global.GDB.Where("e_id = ? AND uid = ?", eid, uid).
+		First(&mid).Error; err != nil {
+		return "", err
+	}
+	if !mid.Status {
+		return "", errors.New("未提交")
+	}
+	dirPath := fmt.Sprintf("%s%d/%s", global.GCoursePath, eid, mid.GID)
+	filename := fmt.Sprintf("%d-%s.zip", eid, uid)
+	outName := path.Join(global.GTmpPath, filename)
+
+	outfile, err := os.Stat(outName)
+	if err == nil {
+		if outfile.ModTime().After(mid.UpdatedAt) {
+			return filename, nil
+		}
+	}
+	err = utils.ZipFiles(outName,
+		[]string{dirPath},
+		[]string{dirPath},
+		[]string{uid + "/"})
+	return filename, err
+}
+
+func DownloadAllSubmission(eid uint) (string, error) {
+	dirPath := fmt.Sprintf("%s%d/", global.GCoursePath, eid)
+	filename := fmt.Sprintf("%d.zip", eid)
+	outName := path.Join(global.GTmpPath, filename)
+
+	outfile, err := os.Stat(outName)
+	if err == nil {
+		var up time.Time
+		err = global.GDB.Model(&entity.MExperimentSubmit{}).
+			Select("updated_at").
+			Order("updated_at").
+			Limit(1).Find(&up).Error
+		if err == nil && outfile.ModTime().After(up) {
+			return filename, nil
+		}
+	}
+	err = utils.ZipFiles(outName,
+		[]string{dirPath},
+		[]string{dirPath},
+		[]string{fmt.Sprintf("%d/", eid)})
+	return filename, err
+}

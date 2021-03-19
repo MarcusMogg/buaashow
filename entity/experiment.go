@@ -12,18 +12,22 @@ type MExperiment struct {
 	Info      string
 	BeginTime time.Time
 	EndTime   time.Time
-	Resources string
+}
+
+type MExperimentResource struct {
+	EID  uint   `gorm:"primarykey"`
+	File string `gorm:"primarykey"`
 }
 
 // MExperimentSubmit 学生作业提交状态
-// if GID == EID,  then he can modify the group member.
-// Anyone in the group can modify the submission
-// TODO : 用户提交的作业内容
+// only GID == UID,
+// can modify the group member and modify the submission
 type MExperimentSubmit struct {
-	EID    uint   `gorm:"primarykey"`
-	UID    string `gorm:"primarykey"`
-	GID    string
-	Status bool
+	EID       uint   `gorm:"primarykey"`
+	UID       string `gorm:"primarykey"`
+	GID       string
+	Status    bool
+	UpdatedAt time.Time
 }
 
 // SummitType 允许提交的作品类型
@@ -75,8 +79,6 @@ type ExperimentReq struct {
 	// YYYY-MM-DD HH-MM-SS
 	BeginTime string `json:"begin"`
 	EndTime   string `json:"end"`
-
-	Resources []string `json:"resources"`
 }
 
 // SubmissionResp 作业信息

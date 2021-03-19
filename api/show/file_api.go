@@ -19,7 +19,7 @@ import (
 // @Router /file/{name} [get]
 func Download(c *gin.Context) {
 	name := c.Param("name")
-	c.File(path.Join(global.GImgPath, name))
+	c.File(path.Join(global.GTmpPath, name))
 }
 
 // Upload gdoc
@@ -65,10 +65,6 @@ func Show() func(c *gin.Context) {
 		gid := c.Param("gid")
 		dir := fmt.Sprintf("%s/%s/show", eid, gid)
 		file := c.Param("filepath")
-		// default index
-		/*if file == "/" {
-			file = "index.html"
-		}*/
 		if !canShow {
 			c.Status(http.StatusNotFound)
 			return

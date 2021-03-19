@@ -6,7 +6,6 @@ import (
 	"buaashow/response"
 	"buaashow/service"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -233,7 +232,6 @@ func CreateExp(c *gin.Context) {
 			Info:      req.Info,
 			BeginTime: begin,
 			EndTime:   end,
-			Resources: strings.Join(req.Resources, ","),
 		}
 		if err = service.CreateExp(&exp, u.Account); err != nil {
 			response.FailWithMessage(err.Error(), c)

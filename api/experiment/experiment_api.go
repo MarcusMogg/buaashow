@@ -5,8 +5,9 @@ import (
 	"buaashow/global"
 	"buaashow/response"
 	"buaashow/service"
+	"fmt"
+	"path"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -102,7 +103,6 @@ func EditExp(c *gin.Context) {
 		exp.Info = req.Info
 		exp.BeginTime = begin
 		exp.EndTime = end
-		exp.Resources = strings.Join(req.Resources, ",")
 
 		if err = service.UpdateExp(exp, u.Account); err != nil {
 			response.FailWithMessage(err.Error(), c)
@@ -115,6 +115,71 @@ func EditExp(c *gin.Context) {
 		zap.S().Debug(err)
 	}
 
+}
+
+// AddExpFile godc
+// @Tags exp
+// @Summary 添加实验资源文件,文件存在的话会被替换
+// @Produce application/json
+// @Param file formData file true "选择上传文件"
+// @Accept multipart/form-data
+// @Success 200
+// @Router /exp/{id}/file [post]
+func AddExpFile(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	file, err := c.FormFile("file")
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+
+	filename := fmt.Sprintf("%d-%s", eid, file.Filename)
+	c.SaveUploadedFile(file, path.Join(global.GTmpPath, filename))
+
+	if err = service.AddExpFile(uint(eid), u.Account, filename); err != nil {
+		response.Ok(c)
+	} else {
+		response.FailWithMessage(err.Error(), c)
+		zap.S().Debug(err)
+	}
+}
+
+// DeleteExpFile godc
+// @Tags exp
+// @Summary 删除实验资源文件
+// @Produce application/json
+// @Success 200
+// @Router /exp/{id}/file/{filename} [delete]
+func DeleteExpFile(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	filename := c.Param("filename")
+
+	if err = service.DeleteExpFile(uint(eid), u.Account, filename); err != nil {
+		response.Ok(c)
+	} else {
+		response.FailWithMessage(err.Error(), c)
+		zap.S().Debug(err)
+	}
 }
 
 // DeleteExp godc
@@ -215,4 +280,83 @@ func SubmitInfo(c *gin.Context) {
 		res.Status = false
 	}
 	response.OkWithData(res, c)
+}
+
+// AllSubmitInfo godc
+// @Tags exp
+// @Summary 学生提交信息列表
+// @Produce application/json
+// @Success 200 {array} entity.SubmissionResp
+// @Router /exp/{id}/stat [get]
+func AllSubmitInfo(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	res, err := service.GetAllSubmission(uint(eid), u.Account)
+	if err == nil {
+		response.OkWithData(res, c)
+	} else {
+		zap.S().Debug(err)
+		response.FailWithMessage(err.Error(), c)
+	}
+}
+
+// DownloadSubmit godc
+// @Tags exp
+// @Summary 下载提交过的作业
+// @Produce application/json
+// @Router /exp/{id}/dl/{account} [get]
+func DownloadSubmit(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	ac := c.Param("account")
+	if ac != u.Account && u.Role == entity.Student {
+		response.FailWithMessage("权限不足", c)
+		return
+	}
+	filename, err := service.DownloadSubmission(uint(eid), ac)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		zap.S().Debug(err)
+	} else {
+		c.File(filename)
+	}
+
+}
+
+// DownloadSubmit godc
+// @Tags exp
+// @Summary 下载所有提交过的作业
+// @Produce application/json
+// @Router /exp/{id}/dlall [get]
+func DownloadAll(c *gin.Context) {
+	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	filename, err := service.DownloadAllSubmission(uint(eid))
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		zap.S().Debug(err)
+	} else {
+		c.File(filename)
+	}
 }

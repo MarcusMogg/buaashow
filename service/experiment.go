@@ -5,7 +5,6 @@ import (
 	"buaashow/global"
 	"errors"
 	"fmt"
-	"strings"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -17,7 +16,8 @@ func CreateExp(e *entity.MExperiment, uid string) error {
 		return errors.New("权限不足")
 	}
 	var rs []entity.RCourseStudent
-	global.GDB.Model(&entity.RCourseStudent{}).Where("course_id = ?", e.CID).Find(&rs)
+	global.GDB.Model(&entity.RCourseStudent{}).
+		Where("course_id = ? AND auth = ? ", e.CID, entity.Member).Find(&rs)
 
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(e).Error; err != nil {
@@ -54,9 +54,35 @@ func UpdateExp(e *entity.MExperiment, uid string) error {
 	})
 }
 
+func AddExpFile(eid uint, uid, filename string) error {
+	if !checkMCourseAuth(eid, uid, entity.Owner) {
+		return errors.New("权限不足")
+	}
+	return global.GDB.Transaction(func(tx *gorm.DB) error {
+		return tx.FirstOrCreate(&entity.MExperimentResource{},
+			entity.MExperimentResource{
+				EID:  eid,
+				File: filename,
+			}).Error
+	})
+}
+
+func DeleteExpFile(eid uint, uid, filename string) error {
+	if !checkMCourseAuth(eid, uid, entity.Owner) {
+		return errors.New("权限不足")
+	}
+	return global.GDB.Transaction(func(tx *gorm.DB) error {
+		return tx.Delete(&entity.MExperimentResource{
+			EID:  eid,
+			File: filename,
+		}).Error
+	})
+}
+
 func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 	var course entity.MCourse
 	var ca entity.RCourseStudent
+	var resources []string
 	err := global.GDB.Where("id = ?", i.CID).First(&course).Error
 	if err != nil {
 		return nil, err
@@ -66,6 +92,9 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+	global.GDB.Model(&entity.MExperimentResource{}).
+		Select("file").Where("e_id = ?", i.ID).Find(&resources)
+
 	return &entity.ExperimentResponse{
 		ID:          i.ID,
 		Name:        i.Name,
@@ -75,7 +104,7 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 		TeacherName: ca.UserID,
 		BeginTime:   i.BeginTime.Format(global.TimeTemplateSec),
 		EndTime:     i.EndTime.Format(global.TimeTemplateSec),
-		Resources:   strings.Split(i.Resources, ","),
+		Resources:   resources,
 	}, nil
 }
 
@@ -140,13 +169,6 @@ func Submit(s *entity.MSubmission, uid string) error {
 	var mid entity.MExperimentSubmit
 	var exp entity.MExperiment
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("id = ?", s.EID).
-			Select("begin_time,end_time").First(&exp).Error; err != nil {
-			return err
-		}
-		if s.UpdatedAt.Before(exp.BeginTime) || s.UpdatedAt.After(exp.EndTime) {
-			return errors.New("不在时间区间")
-		}
 		if err := tx.Where("e_id = ? AND uid = ?", s.EID, uid).
 			First(&mid).Error; err != nil {
 			return err
@@ -155,6 +177,15 @@ func Submit(s *entity.MSubmission, uid string) error {
 			return errors.New("权限不足")
 		}
 		s.GID = mid.GID
+
+		if err := tx.Where("id = ?", s.EID).
+			Select("begin_time,end_time").First(&exp).Error; err != nil {
+			return err
+		}
+		if s.UpdatedAt.Before(exp.BeginTime) || s.UpdatedAt.After(exp.EndTime) {
+			return errors.New("不在时间区间")
+		}
+
 		var oldURL struct {
 			OldURL string
 		}
@@ -190,6 +221,7 @@ func Submit(s *entity.MSubmission, uid string) error {
 			return err
 		}
 		mid.Status = true
+		mid.UpdatedAt = s.UpdatedAt
 		return tx.Save(&mid).Error
 	})
 }
@@ -223,4 +255,47 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 		res.Groups = append(res.Groups, i.UID)
 	}
 	return nil
+}
+
+func GetAllSubmission(eid uint, uid string) ([]*entity.SubmissionResp, error) {
+	exp, err := GetMExp(eid)
+	if err != nil {
+		return nil, err
+	}
+	if !checkMCourseAuth(exp.CID, uid, entity.Owner) {
+		return nil, errors.New("权限不足")
+	}
+
+	var rs []entity.RCourseStudent
+	global.GDB.Model(&entity.RCourseStudent{}).
+		Where("course_id = ? AND auth = ? ", exp.CID, entity.Member).Find(&rs)
+
+	getSub := func(eid uint, uid string) (*entity.SubmissionResp, error) {
+		res := &entity.SubmissionResp{}
+		var mid entity.MExperimentSubmit
+		var sub entity.MSubmission
+		if err := global.GDB.Where("e_id = ? AND uid = ?", eid, uid).
+			First(&mid).Error; err != nil {
+			return nil, err
+		}
+		if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
+			First(&sub).Error; err != nil {
+			return nil, err
+		}
+		res.Status = true
+		res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
+		return nil, nil
+	}
+
+	res := make([]*entity.SubmissionResp, len(rs))
+	for i, v := range rs {
+		tmp, err := getSub(eid, v.UserID)
+		if err == nil {
+			res[i] = tmp
+		} else {
+			zap.S().Debugf("get submission error for eid:%d,uid:%s,%s",
+				eid, v.UserID, err.Error())
+		}
+	}
+	return res, nil
 }
