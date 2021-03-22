@@ -238,9 +238,12 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 		First(&sub).Error; err != nil {
 		return err
 	}
-	var groups []entity.MExperimentSubmit
+	var groups []*entity.UserInfoSimple
+
 	if err := global.GDB.Model(&entity.MExperimentSubmit{}).
-		Where("e_id = ? AND g_id = ?", eid, mid.GID).
+		Select("m_users.account,m_users.name").
+		Joins("INNER JOIN m_users ON m_experiment_submits.uid = m_users.account").
+		Where("m_experiment_submits.e_id = ? AND m_experiment_submits.g_id = ?", eid, mid.GID).
 		Find(&groups).Error; err != nil {
 		return err
 	}
@@ -251,9 +254,7 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 	res.Type = int(sub.Type)
 	res.URL = sub.URL
 	res.Readme = sub.Readme
-	for _, i := range groups {
-		res.Groups = append(res.Groups, i.UID)
-	}
+	res.Groups = groups
 	return nil
 }
 

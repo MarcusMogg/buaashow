@@ -53,6 +53,8 @@ type MSubmission struct {
 	OldURL    string
 	DocsURL   string
 	Readme    string
+	Recommend bool
+	Show      bool
 	UpdatedAt time.Time
 }
 
@@ -83,12 +85,12 @@ type ExperimentReq struct {
 
 // SubmissionResp 作业信息
 type SubmissionResp struct {
-	Status    bool     `json:"status"`
-	Groups    []string `json:"groups"`
-	UpdatedAt string   `json:"time"`
-	Name      string   `json:"name"`
-	Info      string   `json:"info"`
-	Type      int      `json:"type"`
-	URL       string   `json:"url"`
-	Readme    string   `json:"readme"`
+	Status    bool              `json:"status"`
+	Groups    []*UserInfoSimple `json:"groups"`
+	UpdatedAt string            `json:"time"`
+	Name      string            `json:"name"`
+	Info      string            `json:"info"`
+	Type      int               `json:"type"`
+	URL       string            `json:"url"`
+	Readme    string            `json:"readme"`
 }

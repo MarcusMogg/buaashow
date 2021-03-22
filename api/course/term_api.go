@@ -29,7 +29,7 @@ func GetTerms(c *gin.Context) {
 
 // CreateTerm gdoc
 // @Tags term
-// @Summary 新增一个学期,需管理员登录,season 1春 2秋
+// @Summary 新增一个学期,需管理员登录
 // @Produce application/json
 // @Param newTermData body entity.Term true "学期信息"
 // @Router /terms [post]

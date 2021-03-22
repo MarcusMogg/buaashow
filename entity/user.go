@@ -31,3 +31,8 @@ type UserInfoRes struct {
 	Name    string `json:"name"`
 	Email   string `json:"email"`
 }
+
+type UserInfoSimple struct {
+	Account string `json:"account"`
+	Name    string `json:"name"`
+}

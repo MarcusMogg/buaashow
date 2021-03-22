@@ -1,4 +1,4 @@
-package show
+package files
 
 import "github.com/gin-gonic/gin"
 
@@ -9,9 +9,5 @@ func InitRouter(router *gin.RouterGroup) {
 		rg.POST("", Upload)
 		rg.GET("/:name", Download)
 	}
-	sg := router.Group("show")
-	{
-		// TODO: 中间件或者啥判断可见性
-		sg.GET("/:eid/:gid/*filepath", Show())
-	}
+
 }

@@ -27,5 +27,5 @@ func NextID() string {
 	now := time.Now().Unix()
 
 	data := []byte(fmt.Sprintf("%016x-%04x", now, id))
-	return base64.StdEncoding.EncodeToString(data)
+	return base64.URLEncoding.EncodeToString(data)
 }

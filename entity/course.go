@@ -11,7 +11,6 @@ type Term struct {
 }
 
 // MTerm 学期
-// Season 1 春 2 秋
 type MTerm struct {
 	ID    uint `gorm:"primarykey"`
 	TName string
