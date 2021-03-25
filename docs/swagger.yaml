@@ -10,6 +10,7 @@ definitions:
         type: integer
     required:
     - name
+    - tid
     type: object
   course.studentsData:
     properties:
@@ -29,6 +30,8 @@ definitions:
       name:
         type: string
       tbegin:
+        type: string
+      teacher:
         type: string
       tend:
         type: string
@@ -50,10 +53,6 @@ definitions:
         type: string
       name:
         type: string
-      resources:
-        items:
-          type: string
-        type: array
     type: object
   entity.ExperimentResponse:
     properties:
@@ -84,7 +83,7 @@ definitions:
     properties:
       groups:
         items:
-          type: string
+          $ref: '#/definitions/entity.UserInfoSimple'
         type: array
       info:
         type: string
@@ -124,6 +123,13 @@ definitions:
         type: string
       role:
         type: integer
+    type: object
+  entity.UserInfoSimple:
+    properties:
+      account:
+        type: string
+      name:
+        type: string
     type: object
   experiment.SubmissionReq:
     properties:
@@ -177,6 +183,13 @@ definitions:
     required:
     - authorization
     - url
+    type: object
+  user.nameData:
+    properties:
+      name:
+        type: string
+    required:
+    - name
     type: object
   user.passwordData:
     properties:
@@ -434,6 +447,62 @@ paths:
       summary: 修改指定实验
       tags:
       - exp
+  /exp/{id}/dl/{account}:
+    get:
+      produces:
+      - application/json
+      summary: 下载提交过的作业
+      tags:
+      - exp
+  /exp/{id}/dlall:
+    get:
+      produces:
+      - application/json
+      summary: 下载所有提交过的作业
+      tags:
+      - exp
+  /exp/{id}/file:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: 选择上传文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: 添加实验资源文件,文件存在的话会被替换
+      tags:
+      - exp
+  /exp/{id}/file/{filename}:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: 删除实验资源文件
+      tags:
+      - exp
+  /exp/{id}/stat:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.SubmissionResp'
+            type: array
+      summary: 学生提交信息列表
+      tags:
+      - exp
   /exp/{id}/submit:
     get:
       produces:
@@ -511,7 +580,21 @@ paths:
       summary: 获取图片
       tags:
       - Img
-  /show/{eid}/{gid}/{filepath}:
+  /show/readme/{showid}:
+    get:
+      produces:
+      - application/json
+      summary: 简介
+      tags:
+      - show
+  /show/search:
+    get:
+      produces:
+      - application/json
+      summary: 简略信息
+      tags:
+      - show
+  /show/x/{showid}/{filepath}:
     get:
       produces:
       - application/json
@@ -542,7 +625,7 @@ paths:
           $ref: '#/definitions/entity.Term'
       produces:
       - application/json
-      summary: 新增一个学期,需管理员登录,season 1春 2秋
+      summary: 新增一个学期,需管理员登录
       tags:
       - term
   /terms/{tid}:
@@ -573,11 +656,21 @@ paths:
       summary: 获取所有学期信息
       tags:
       - term
+  /test/admin:
+    post:
+      summary: 测试管理员token
+      tags:
+      - User
+  /test/user:
+    post:
+      summary: 测试用户token
+      tags:
+      - User
   /user/del/{id}:
     delete:
       summary: 删除一个用户 only ADMIN
       tags:
-      - user
+      - User
   /user/email:
     post:
       consumes:
@@ -673,6 +766,27 @@ paths:
           schema:
             $ref: '#/definitions/user.loginRes'
       summary: 使用账号密码登录
+      tags:
+      - User
+  /user/name:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 新name
+        in: body
+        name: ticket
+        required: true
+        schema:
+          $ref: '#/definitions/user.nameData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.loginRes'
+      summary: 修改name, 需用户登录
       tags:
       - User
   /user/password:

@@ -101,10 +101,10 @@ func unzipFile(dst string, file *zip.File) error {
 // UnZip 将src文件解压到 dst文件夹下
 func UnZip(src, dst string) (err error) {
 	zr, err := zip.OpenReader(src)
-	defer zr.Close()
 	if err != nil {
-		return
+		return err
 	}
+	defer zr.Close()
 
 	// 如果解压后不是放在当前目录就按照保存目录去创建目录
 	if dst != "" {

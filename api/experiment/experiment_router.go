@@ -20,9 +20,10 @@ func InitRouter(Router *gin.RouterGroup) {
 		CourseRouter.POST(":id/submit", middleware.JWTAuth(entity.Student), SubmitExp)
 		CourseRouter.GET(":id/submit", middleware.JWTAuth(entity.Student), SubmitInfo)
 
-		CourseRouter.GET(":id/dl", middleware.JWTAuth(entity.Student), SubmitInfo)
+		CourseRouter.GET(":id/dl/:account", middleware.JWTAuth(entity.Student), DownloadSubmit)
 
-		CourseRouter.GET(":id/stat", middleware.JWTAuth(entity.Teacher), SubmitInfo)
-		CourseRouter.GET(":id/dlall", middleware.JWTAuth(entity.Teacher), SubmitInfo)
+		CourseRouter.GET(":id/stat", middleware.JWTAuth(entity.Teacher), AllSubmitInfo)
+		CourseRouter.GET(":id/dlall", middleware.JWTAuth(entity.Teacher), DownloadAll)
+		CourseRouter.GET(":id/rec/:account", middleware.JWTAuth(entity.Teacher), Reccommend)
 	}
 }

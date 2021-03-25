@@ -45,7 +45,7 @@ func queryStr(m map[string]string) string {
 	return res
 }
 
-func PerformRequest(t *TestCase) (c *gin.Context, r *http.Request, w *httptest.ResponseRecorder) {
+func (t *TestCase) Request() (c *gin.Context, r *http.Request, w *httptest.ResponseRecorder) {
 	w = httptest.NewRecorder()
 	c, _ = gin.CreateTestContext(w)
 	r = httptest.NewRequest(t.Method, t.URL+queryStr(t.Querys), bytes.NewBufferString(t.Body))
@@ -58,21 +58,18 @@ func PerformRequest(t *TestCase) (c *gin.Context, r *http.Request, w *httptest.R
 	return
 }
 
-func Example(t *testing.T, testcase []*TestCase) {
-	for k, v := range testcase {
-		_, _, w := PerformRequest(v)
+func (v *TestCase) Test(t *testing.T) *response.Response {
+	_, _, w := v.Request()
+	var s response.Response
+	err := json.Unmarshal(w.Body.Bytes(), &s)
 
-		var s response.Response
-		err := json.Unmarshal(w.Body.Bytes(), &s)
-
-		convey.Convey(fmt.Sprintf("第%d个测试用例：%s", k+1, v.Desc), t, func() {
-			if v.ShowBody {
-				fmt.Printf("接口返回%s\n", w.Body.String())
-			}
-			convey.So(err, convey.ShouldBeNil)
-			convey.So(s.Code == v.Resp.Code, convey.ShouldBeTrue)
-			convey.So(reflect.DeepEqual(s.Data, v.Resp.Data), convey.ShouldBeTrue)
-		})
-
-	}
+	convey.Convey(v.Desc, t, func() {
+		if v.ShowBody {
+			fmt.Printf("接口返回%s\n", w.Body.String())
+		}
+		convey.So(err, convey.ShouldBeNil)
+		convey.So(s.Code == v.Resp.Code, convey.ShouldBeTrue)
+		convey.So(reflect.DeepEqual(s.Data, v.Resp.Data), convey.ShouldBeTrue)
+	})
+	return &s
 }

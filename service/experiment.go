@@ -55,7 +55,11 @@ func UpdateExp(e *entity.MExperiment, uid string) error {
 }
 
 func AddExpFile(eid uint, uid, filename string) error {
-	if !checkMCourseAuth(eid, uid, entity.Owner) {
+	exp, err := GetMExp(eid)
+	if err != nil {
+		return err
+	}
+	if !checkMCourseAuth(exp.CID, uid, entity.Owner) {
 		return errors.New("权限不足")
 	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
@@ -68,7 +72,11 @@ func AddExpFile(eid uint, uid, filename string) error {
 }
 
 func DeleteExpFile(eid uint, uid, filename string) error {
-	if !checkMCourseAuth(eid, uid, entity.Owner) {
+	exp, err := GetMExp(eid)
+	if err != nil {
+		return err
+	}
+	if !checkMCourseAuth(exp.CID, uid, entity.Owner) {
 		return errors.New("权限不足")
 	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
@@ -99,6 +107,7 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 		ID:          i.ID,
 		Name:        i.Name,
 		Info:        i.Info,
+		Team:        i.Team,
 		CourseID:    i.CID,
 		CourseName:  course.Name,
 		TeacherName: ca.UserID,
@@ -208,10 +217,13 @@ func Submit(s *entity.MSubmission, uid string) error {
 			}
 		}
 		s.OldURL = s.URL
+		sid := entity.ShowID{
+			EID: s.EID, GID: s.GID,
+		}
 		if s.Type == entity.HTML {
-			s.URL = fmt.Sprintf("show/%d/%s/index.html", s.EID, s.GID)
+			s.URL = fmt.Sprintf("show/x/%s/index.html", sid.Encode())
 		} else if s.Type == entity.EXE {
-			s.URL = fmt.Sprintf("show/%d/%s/release.zip", s.EID, s.GID)
+			s.URL = fmt.Sprintf("show/x/%s/release.zip", sid.Encode())
 		}
 
 		if mid.Status {
@@ -248,6 +260,7 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 		return err
 	}
 	res.Status = true
+	res.Recommend = sub.Recommend
 	res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
 	res.Name = sub.Name
 	res.Info = sub.Info
@@ -273,30 +286,62 @@ func GetAllSubmission(eid uint, uid string) ([]*entity.SubmissionResp, error) {
 
 	getSub := func(eid uint, uid string) (*entity.SubmissionResp, error) {
 		res := &entity.SubmissionResp{}
+		res.StudentID = uid
 		var mid entity.MExperimentSubmit
 		var sub entity.MSubmission
 		if err := global.GDB.Where("e_id = ? AND uid = ?", eid, uid).
 			First(&mid).Error; err != nil {
-			return nil, err
+			return res, err
 		}
 		if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
 			First(&sub).Error; err != nil {
+			return res, err
+		}
+		var groups []*entity.UserInfoSimple
+
+		if err := global.GDB.Model(&entity.MExperimentSubmit{}).
+			Select("m_users.account,m_users.name").
+			Joins("INNER JOIN m_users ON m_experiment_submits.uid = m_users.account").
+			Where("m_experiment_submits.e_id = ? AND m_experiment_submits.g_id = ?", eid, mid.GID).
+			Find(&groups).Error; err != nil {
 			return nil, err
 		}
 		res.Status = true
+		res.Recommend = sub.Recommend
+		res.Groups = groups
 		res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
-		return nil, nil
+		return res, nil
 	}
 
 	res := make([]*entity.SubmissionResp, len(rs))
 	for i, v := range rs {
 		tmp, err := getSub(eid, v.UserID)
-		if err == nil {
-			res[i] = tmp
-		} else {
+		res[i] = tmp
+		if err != nil {
 			zap.S().Debugf("get submission error for eid:%d,uid:%s,%s",
 				eid, v.UserID, err.Error())
 		}
 	}
 	return res, nil
+}
+
+func Reccommend(eid uint, uid, tid string) error {
+	exp, err := GetMExp(eid)
+	if err != nil {
+		return err
+	}
+	if !checkMCourseAuth(exp.CID, tid, entity.Owner) {
+		return errors.New("权限不足")
+	}
+	var mid entity.MExperimentSubmit
+	if err := global.GDB.Where("e_id = ? AND uid = ?", eid, uid).
+		First(&mid).Error; err != nil {
+		return err
+	}
+	if !mid.Status {
+		return errors.New("未提交")
+	}
+	return global.GDB.Model(&entity.MSubmission{}).
+		Where("e_id = ? AND g_id = ?", eid, mid.GID).
+		Update("recommend", gorm.Expr("ABS(recommend - 1)")).Error
 }

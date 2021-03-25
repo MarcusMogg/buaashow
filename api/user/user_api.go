@@ -245,7 +245,7 @@ func GetUserInfoList(c *gin.Context) {
 }
 
 // DeleteUser gdoc
-// @Tags user
+// @Tags User
 // @Summary 删除一个用户 only ADMIN
 // @Router /user/del/{id} [delete]
 func DeleteUser(c *gin.Context) {
@@ -260,7 +260,7 @@ func DeleteUser(c *gin.Context) {
 }
 
 // TestAdmin gdoc
-// @Tags user
+// @Tags User
 // @Summary 测试管理员token
 // @Router /test/admin [post]
 func TestAdmin(c *gin.Context) {
@@ -268,7 +268,7 @@ func TestAdmin(c *gin.Context) {
 }
 
 // TestUser gdoc
-// @Tags user
+// @Tags User
 // @Summary 测试用户token
 // @Router /test/user [post]
 func TestUser(c *gin.Context) {

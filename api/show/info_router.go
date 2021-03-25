@@ -9,8 +9,8 @@ func InitRouter(Router *gin.RouterGroup) {
 		// 简略信息
 		sr.GET("search", Search)
 		// 详细介绍
-		sr.GET("readme/:showid")
+		sr.GET("readme/:showid", Readme)
 		// TODO: 中间件或者啥判断可见性
-		sr.GET("/:showid/*filepath", Show())
+		sr.GET("x/:showid/*filepath", Show())
 	}
 }

@@ -230,6 +230,7 @@ func CreateExp(c *gin.Context) {
 			CID:       uint(cid),
 			Name:      req.Name,
 			Info:      req.Info,
+			Team:      req.Team,
 			BeginTime: begin,
 			EndTime:   end,
 		}

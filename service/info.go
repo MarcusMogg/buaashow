@@ -10,7 +10,7 @@ func GetSummary(params *entity.SearchParam) []*entity.SummaryResp {
 	var res []*entity.SummaryResp
 	db := global.GDB
 	db = db.Model(&entity.MExperiment{}).
-		Joins("INNER JOIN m_submissions ON m_experiments.id = m_submissions.eid").
+		Joins("INNER JOIN m_submissions ON m_experiments.id = m_submissions.e_id").
 		Joins("INNER JOIN m_courses ON m_courses.id = m_experiments.c_id").
 		Joins("INNER JOIN m_users ON m_users.account = m_submissions.g_id").
 		Select(`m_courses.name,

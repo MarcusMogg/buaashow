@@ -8,6 +8,7 @@ import (
 type MExperiment struct {
 	ID        uint `gorm:"primarykey"`
 	CID       uint
+	Team      bool
 	Name      string
 	Info      string
 	BeginTime time.Time
@@ -63,6 +64,7 @@ type ExperimentResponse struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
 	Info string `json:"info"`
+	Team bool   `json:"team"`
 	// course info
 	CourseID    uint   `json:"cid"`
 	CourseName  string `json:"cname"`
@@ -76,16 +78,19 @@ type ExperimentResponse struct {
 
 // ExperimentReq 创建 or 修改实验
 type ExperimentReq struct {
-	Name string `json:"name"`
+	Name string `json:"name" binding:"required"`
 	Info string `json:"info"`
+	Team bool   `json:"team"`
 	// YYYY-MM-DD HH-MM-SS
-	BeginTime string `json:"begin"`
-	EndTime   string `json:"end"`
+	BeginTime string `json:"begin" binding:"required"`
+	EndTime   string `json:"end" binding:"required"`
 }
 
 // SubmissionResp 作业信息
 type SubmissionResp struct {
 	Status    bool              `json:"status"`
+	Recommend bool              `json:"rec"`
+	StudentID string            `json:"uid"`
 	Groups    []*UserInfoSimple `json:"groups"`
 	UpdatedAt string            `json:"time"`
 	Name      string            `json:"name"`

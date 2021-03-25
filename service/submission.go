@@ -233,24 +233,26 @@ func DownloadSubmission(eid uint, uid string) (string, error) {
 		return "", errors.New("未提交")
 	}
 	dirPath := fmt.Sprintf("%s%d/%s", global.GCoursePath, eid, mid.GID)
+	dirPath = filepath.Clean(dirPath)
 	filename := fmt.Sprintf("%d-%s.zip", eid, uid)
 	outName := path.Join(global.GTmpPath, filename)
 
 	outfile, err := os.Stat(outName)
 	if err == nil {
 		if outfile.ModTime().After(mid.UpdatedAt) {
-			return filename, nil
+			return outName, nil
 		}
 	}
 	err = utils.ZipFiles(outName,
 		[]string{dirPath},
 		[]string{dirPath},
-		[]string{uid + "/"})
-	return filename, err
+		[]string{uid})
+	return outName, err
 }
 
 func DownloadAllSubmission(eid uint) (string, error) {
 	dirPath := fmt.Sprintf("%s%d/", global.GCoursePath, eid)
+	dirPath = filepath.Clean(dirPath)
 	filename := fmt.Sprintf("%d.zip", eid)
 	outName := path.Join(global.GTmpPath, filename)
 
@@ -262,12 +264,12 @@ func DownloadAllSubmission(eid uint) (string, error) {
 			Order("updated_at").
 			Limit(1).Find(&up).Error
 		if err == nil && outfile.ModTime().After(up) {
-			return filename, nil
+			return outName, nil
 		}
 	}
 	err = utils.ZipFiles(outName,
 		[]string{dirPath},
 		[]string{dirPath},
-		[]string{fmt.Sprintf("%d/", eid)})
-	return filename, err
+		[]string{fmt.Sprintf("%d", eid)})
+	return outName, err
 }

@@ -146,7 +146,7 @@ func AddExpFile(c *gin.Context) {
 	filename := fmt.Sprintf("%d-%s", eid, file.Filename)
 	c.SaveUploadedFile(file, path.Join(global.GTmpPath, filename))
 
-	if err = service.AddExpFile(uint(eid), u.Account, filename); err != nil {
+	if err = service.AddExpFile(uint(eid), u.Account, filename); err == nil {
 		response.Ok(c)
 	} else {
 		response.FailWithMessage(err.Error(), c)
@@ -336,6 +336,7 @@ func DownloadSubmit(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		zap.S().Debug(err)
 	} else {
+		zap.S().Debug(filename)
 		c.File(filename)
 	}
 
@@ -358,5 +359,31 @@ func DownloadAll(c *gin.Context) {
 		zap.S().Debug(err)
 	} else {
 		c.File(filename)
+	}
+}
+
+// Reccommend godc
+// @Tags exp
+// @Summary 将作业设为推荐
+// @Produce application/json
+// @Router /exp/{id}/rec/{account} [get]
+func Reccommend(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	ac := c.Param("account")
+	if err := service.Reccommend(uint(eid), ac, u.Account); err == nil {
+		response.Ok(c)
+	} else {
+		zap.S().Debug(err)
+		response.Fail(c)
 	}
 }

@@ -17,7 +17,7 @@ import (
 // @Tags show
 // @Summary 图片展示
 // @Produce application/json
-// @Router /show/{showid}/{filepath} [get]
+// @Router /show/x/{showid}/{filepath} [get]
 func Show() func(c *gin.Context) {
 	fs := gin.Dir(global.GCoursePath, false)
 	// fileServer := http.StripPrefix("/show", http.FileServer(fs))

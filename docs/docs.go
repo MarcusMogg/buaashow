@@ -381,6 +381,94 @@ var doc = `{
                 }
             }
         },
+        "/exp/{id}/dl/{account}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "下载提交过的作业"
+            }
+        },
+        "/exp/{id}/dlall": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "下载所有提交过的作业"
+            }
+        },
+        "/exp/{id}/file": {
+            "post": {
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "添加实验资源文件,文件存在的话会被替换",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "选择上传文件",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/exp/{id}/file/{filename}": {
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "删除实验资源文件",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/exp/{id}/stat": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "学生提交信息列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.SubmissionResp"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/exp/{id}/submit": {
             "get": {
                 "produces": [
@@ -500,7 +588,29 @@ var doc = `{
                 "summary": "获取图片"
             }
         },
-        "/show/{eid}/{gid}/{filepath}": {
+        "/show/readme/{showid}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "show"
+                ],
+                "summary": "简介"
+            }
+        },
+        "/show/search": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "show"
+                ],
+                "summary": "简略信息"
+            }
+        },
+        "/show/x/{showid}/{filepath}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -539,7 +649,7 @@ var doc = `{
                 "tags": [
                     "term"
                 ],
-                "summary": "新增一个学期,需管理员登录,season 1春 2秋",
+                "summary": "新增一个学期,需管理员登录",
                 "parameters": [
                     {
                         "description": "学期信息",
@@ -597,10 +707,26 @@ var doc = `{
                 ]
             }
         },
+        "/test/admin": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "测试管理员token"
+            }
+        },
+        "/test/user": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "测试用户token"
+            }
+        },
         "/user/del/{id}": {
             "delete": {
                 "tags": [
-                    "user"
+                    "User"
                 ],
                 "summary": "删除一个用户 only ADMIN"
             }
@@ -757,6 +883,39 @@ var doc = `{
                 }
             }
         },
+        "/user/name": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "修改name, 需用户登录",
+                "parameters": [
+                    {
+                        "description": "新name",
+                        "name": "ticket",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.nameData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.loginRes"
+                        }
+                    }
+                }
+            }
+        },
         "/user/password": {
             "post": {
                 "consumes": [
@@ -853,7 +1012,8 @@ var doc = `{
         "course.courseData": {
             "type": "object",
             "required": [
-                "name"
+                "name",
+                "tid"
             ],
             "properties": {
                 "info": {
@@ -899,6 +1059,9 @@ var doc = `{
                 "tbegin": {
                     "type": "string"
                 },
+                "teacher": {
+                    "type": "string"
+                },
                 "tend": {
                     "type": "string"
                 },
@@ -925,12 +1088,6 @@ var doc = `{
                 },
                 "name": {
                     "type": "string"
-                },
-                "resources": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },
@@ -977,7 +1134,7 @@ var doc = `{
                 "groups": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/entity.UserInfoSimple"
                     }
                 },
                 "info": {
@@ -1037,6 +1194,17 @@ var doc = `{
                 },
                 "role": {
                     "type": "integer"
+                }
+            }
+        },
+        "entity.UserInfoSimple": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -1117,6 +1285,17 @@ var doc = `{
                     "type": "string"
                 },
                 "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.nameData": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
                     "type": "string"
                 }
             }
