@@ -1,0 +1,19 @@
+[
+    {
+        "ok": true,
+        "desc": "管理员成功登陆",
+        "method": "POST",
+        "url": "/user/login",
+        "header": {},
+        "query": {},
+        "body": {
+            "account": "admin",
+            "password": "123456"
+        },
+        "resp": {
+            "code": 200,
+            "msg": "",
+            "data": {}
+        }
+    }
+]
