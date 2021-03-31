@@ -225,7 +225,7 @@ func CreateTeacher(c *gin.Context) {
 // @Success 200 {array} entity.UserInfoRes
 // @Router /user/infolist [get]
 func GetUserInfoList(c *gin.Context) {
-	pageStr := c.DefaultQuery("page", "0")
+	pageStr := c.DefaultQuery("page", "1")
 	page, err := strconv.ParseUint(pageStr, 10, 0)
 	if err != nil {
 		response.FailValidate(c)

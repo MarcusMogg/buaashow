@@ -25,5 +25,9 @@ func InitRouter(Router *gin.RouterGroup) {
 		CourseRouter.GET(":id/stat", middleware.JWTAuth(entity.Teacher), AllSubmitInfo)
 		CourseRouter.GET(":id/dlall", middleware.JWTAuth(entity.Teacher), DownloadAll)
 		CourseRouter.GET(":id/rec/:account", middleware.JWTAuth(entity.Teacher), Reccommend)
+
+		CourseRouter.GET(":id/team", middleware.JWTAuth(entity.Student), MyTeamInfo)
+		CourseRouter.GET(":id/team/:gid", middleware.JWTAuth(entity.Student), JoinTeam)
+		CourseRouter.DELETE(":id/team/:gid", middleware.JWTAuth(entity.Student), QuitTeam)
 	}
 }

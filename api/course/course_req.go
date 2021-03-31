@@ -7,7 +7,6 @@ type courseData struct {
 	TID  uint   `json:"tid" binding:"required"`
 }
 
-// TODO：add name
 type studentsData struct {
 	Accounts []string `json:"accounts" binding:"required,ascii"`
 	// Names    []string `json:"names" binding:"required"`

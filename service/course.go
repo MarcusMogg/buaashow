@@ -140,7 +140,7 @@ func GetStudentsInCourse(cid uint) []entity.UserInfoRes {
 	global.GDB.Model(&entity.RCourseStudent{}).
 		Select("m_users.account,m_users.role,m_users.name,m_users.email").
 		Joins("INNER JOIN m_users ON r_course_students.user_id = m_users.account").
-		Where("r_course_students.course_id = ?", cid).
+		Where("r_course_students.course_id = ?  AND r_course_students.auth = ?", cid, entity.Member).
 		Find(&res)
 	return res
 }

@@ -103,7 +103,7 @@ func EditExp(c *gin.Context) {
 		exp.Info = req.Info
 		exp.BeginTime = begin
 		exp.EndTime = end
-
+		exp.Team = req.Team
 		if err = service.UpdateExp(exp, u.Account); err != nil {
 			response.FailWithMessage(err.Error(), c)
 			zap.S().Debug(err)

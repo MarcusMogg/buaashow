@@ -345,3 +345,49 @@ func Reccommend(eid uint, uid, tid string) error {
 		Where("e_id = ? AND g_id = ?", eid, mid.GID).
 		Update("recommend", gorm.Expr("ABS(recommend - 1)")).Error
 }
+
+func TeamInfo(eid uint, uid string) (string, bool, error) {
+	var mid entity.MExperimentSubmit
+	var exp entity.MExperiment
+	if err := global.GDB.Where("id = ?", eid).
+		Select("team").
+		First(&exp).Error; err != nil {
+		return "", false, err
+	}
+	if !exp.Team {
+		return "", false, errors.New("此课程不允许组队")
+	}
+	if err := global.GDB.Where("e_id = ? AND uid = ?", eid, uid).
+		First(&mid).Error; err != nil {
+		return "", false, err
+	}
+	res := mid.GID
+	var teamMember int64
+	inTeam := true
+	if res == uid {
+		global.GDB.Model(&entity.MExperimentSubmit{}).
+			Where("e_id = ? AND g_id = ?", eid, res).
+			Count(&teamMember)
+		inTeam = (teamMember > 1)
+	}
+	return res, inTeam, nil
+}
+
+func JoinTeam(eid uint, uid, gid string) error {
+	_, in, err := TeamInfo(eid, uid)
+	if err != nil {
+		return err
+	}
+	if in {
+		return errors.New("已经组队")
+	}
+	return global.GDB.Model(&entity.MExperimentSubmit{}).
+		Where("e_id = ? AND uid = ?", eid, uid).
+		Update("g_id", gid).Error
+}
+
+func QiutTeam(eid uint, uid, gid string) error {
+	return global.GDB.Model(&entity.MExperimentSubmit{}).
+		Where("e_id = ? AND uid = ?", eid, uid).
+		Update("g_id", uid).Error
+}

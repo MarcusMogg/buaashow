@@ -70,7 +70,11 @@ func Show() func(c *gin.Context) {
 func Search(c *gin.Context) {
 	var sp entity.SearchParam
 	if err := c.ShouldBindQuery(&sp); err == nil {
-		response.OkWithData(service.GetSummary(&sp), c)
+		tot, res := service.GetSummary(&sp)
+		response.OkWithData(gin.H{
+			"tot": tot,
+			"res": res,
+		}, c)
 	} else {
 		response.FailValidate(c)
 		zap.S().Debug(err)

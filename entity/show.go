@@ -25,6 +25,8 @@ type SearchParam struct {
 	Recommend  string `form:"rec"`
 	TermID     int    `form:"tid"`
 	Title      string `form:"title"`
+	PageNum    int    `form:"page"`
+	PageSize   int    `form:"size"`
 }
 
 type ShowID struct {
