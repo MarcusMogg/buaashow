@@ -105,6 +105,9 @@ func CreateStudentsToCourse(accounts []string, cid uint, uid string) (fails []st
 		err = errors.New("权限不足")
 		return
 	}
+	var eds []uint
+	global.GDB.Model(&entity.MExperiment{}).Select("id").
+		Where("c_id = ?", cid).Scan(&eds)
 	fails = make([]string, 0)
 	basePwd := utils.AesEncrypt("666666")
 	for i := range accounts {
@@ -119,11 +122,20 @@ func CreateStudentsToCourse(accounts []string, cid uint, uid string) (fails []st
 			if result.Error != nil {
 				return result.Error
 			}
+			for _, id := range eds {
+				tx.Create(&entity.MExperimentSubmit{
+					EID:    id,
+					UID:    accounts[i],
+					GID:    accounts[i],
+					Status: false,
+				})
+			}
 			return tx.Create(&entity.RCourseStudent{
 				CourseID: cid,
 				UserID:   user.Account,
 				Auth:     entity.Member,
 			}).Error
+
 		})
 		if err != nil {
 			fails = append(fails, accounts[i])
@@ -152,6 +164,15 @@ func DeleteStudent(cid uint, uid string, user *entity.MUser) error {
 	}
 	if uid == user.Account {
 		return errors.New("不能删除老师")
+	}
+	var eds []uint
+	global.GDB.Model(&entity.MExperiment{}).Select("id").
+		Where("c_id = ?", cid).Scan(&eds)
+	for _, id := range eds {
+		global.GDB.Delete(&entity.MExperimentSubmit{
+			EID: id,
+			UID: uid,
+		})
 	}
 	return global.GDB.Delete(&entity.RCourseStudent{
 		CourseID: cid,
