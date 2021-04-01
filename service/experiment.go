@@ -180,7 +180,27 @@ func Submit(s *entity.MSubmission, uid string) error {
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("e_id = ? AND uid = ?", s.EID, uid).
 			First(&mid).Error; err != nil {
-			return err
+			// FIXME : really need it?
+			if err == gorm.ErrRecordNotFound {
+				var cid uint
+				tx.Model(&entity.MExperiment{}).Select("c_id").Where("id = ?", s.EID).Scan(&cid)
+				if tx.Where("c_id = ? AND uid = ?", cid, uid).First(&entity.RCourseStudent{}).Error == nil {
+					mid = entity.MExperimentSubmit{
+						EID:    s.EID,
+						UID:    uid,
+						GID:    uid,
+						Status: false,
+					}
+					err := tx.Create(&mid).Error
+					if err != nil {
+						return err
+					}
+				} else {
+					return err
+				}
+			} else {
+				return err
+			}
 		}
 		if mid.GID != uid {
 			return errors.New("权限不足")
@@ -246,10 +266,6 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 		First(&mid).Error; err != nil {
 		return err
 	}
-	if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
-		First(&sub).Error; err != nil {
-		return err
-	}
 	var groups []*entity.UserInfoSimple
 
 	if err := global.GDB.Model(&entity.MExperimentSubmit{}).
@@ -259,6 +275,16 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 		Find(&groups).Error; err != nil {
 		return err
 	}
+	res.Groups = groups
+	if !mid.Status {
+		res.Status = false
+		return nil
+	}
+	if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
+		First(&sub).Error; err != nil {
+		return err
+	}
+
 	res.Status = true
 	res.Recommend = sub.Recommend
 	res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
@@ -267,7 +293,6 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 	res.Type = int(sub.Type)
 	res.URL = sub.URL
 	res.Readme = sub.Readme
-	res.Groups = groups
 	return nil
 }
 
