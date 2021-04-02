@@ -416,3 +416,13 @@ func QiutTeam(eid uint, uid, gid string) error {
 		Where("e_id = ? AND uid = ?", eid, uid).
 		Update("g_id", uid).Error
 }
+
+func AttrSubmitStatus(res []*entity.ExperimentResponse, uid string) {
+	for i := range res {
+		var mid entity.MExperimentSubmit
+		if err := global.GDB.Where("e_id = ? AND uid = ?", res[i].ID, uid).
+			First(&mid).Error; err == nil {
+			res[i].Submit = mid.Status
+		}
+	}
+}

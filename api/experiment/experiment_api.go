@@ -38,6 +38,7 @@ func GetMyExps(c *gin.Context) {
 			res = append(res, tmp...)
 		}
 	}
+	service.AttrSubmitStatus(res, u.Account)
 	response.OkWithData(res, c)
 }
 

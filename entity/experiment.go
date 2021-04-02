@@ -61,10 +61,11 @@ type MSubmission struct {
 
 // ExperimentResponse 完整的实验信息
 type ExperimentResponse struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
-	Info string `json:"info"`
-	Team bool   `json:"team"`
+	ID     uint   `json:"id"`
+	Name   string `json:"name"`
+	Info   string `json:"info"`
+	Team   bool   `json:"team"`
+	Submit bool   `json:"submit"`
 	// course info
 	CourseID    uint   `json:"cid"`
 	CourseName  string `json:"cname"`
