@@ -55,3 +55,23 @@ func GetTerms(year int) (res []*entity.Term) {
 		Where("begin >= ?", begin.Format(global.TimeTemplateDay)).Find(&res)
 	return res
 }
+
+func UpdateTerm(term *entity.Term) error {
+	begin, err := time.ParseInLocation(global.TimeTemplateDay, term.Begin, time.Local)
+	if err != nil {
+		return err
+	}
+	end, err := time.ParseInLocation(global.TimeTemplateDay, term.End, time.Local)
+	if err != nil {
+		return err
+	}
+	t := &entity.MTerm{
+		ID:    term.TID,
+		TName: term.TName,
+		Begin: begin,
+		End:   end,
+	}
+	return global.GDB.Transaction(func(tx *gorm.DB) error {
+		return tx.Save(t).Error
+	})
+}

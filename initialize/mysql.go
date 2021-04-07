@@ -19,7 +19,7 @@ func Mysql() {
 		logger.Config{
 			SlowThreshold: time.Second, // 慢 SQL 阈值
 			LogLevel:      logger.Info, // Log level
-			Colorful:      true,        // 禁用彩色打印
+			Colorful:      false,       // 禁用彩色打印
 		},
 	)
 	connect := global.GConfig.Mysql

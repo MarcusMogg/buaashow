@@ -100,6 +100,14 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+	var teacherName string
+	global.GDB.Model(&entity.MUser{}).
+		Where("account = ?", ca.UserID).
+		Select("name").
+		First(&teacherName)
+	if len(teacherName) == 0 {
+		teacherName = ca.UserID
+	}
 	global.GDB.Model(&entity.MExperimentResource{}).
 		Select("file").Where("e_id = ?", i.ID).Find(&resources)
 
@@ -110,7 +118,8 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 		Team:        i.Team,
 		CourseID:    i.CID,
 		CourseName:  course.Name,
-		TeacherName: ca.UserID,
+		Teacher:     ca.UserID,
+		TeacherName: teacherName,
 		BeginTime:   i.BeginTime.Format(global.TimeTemplateSec),
 		EndTime:     i.EndTime.Format(global.TimeTemplateSec),
 		Resources:   resources,

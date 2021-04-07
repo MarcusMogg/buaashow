@@ -69,12 +69,12 @@ func UpdatePassword(user *entity.MUser, oldPassword, newPassword string) error {
 }
 
 //GetUserInfoList 查询用户列表
-func GetUserInfoList(page, pageSize int, account string) (int, []*entity.UserInfoRes, error) {
+func GetUserInfoList(page, pageSize, tp int, account string) (int, []*entity.UserInfoRes, error) {
 	var res []*entity.UserInfoRes
 	offset := (page - 1) * pageSize
 	var tot int64
 	err := global.GDB.Model(&entity.MUser{}).
-		Where("account LIKE ? AND role != ?", fmt.Sprintf("%%%s%%", account), entity.Admin).
+		Where("account LIKE ? AND role = ?", fmt.Sprintf("%%%s%%", account), entity.Role(tp)).
 		Select("account,role,name,email").
 		Count(&tot).Offset(offset).Limit(pageSize).Find(&res).Error
 	return int(tot), res, err
@@ -85,4 +85,16 @@ func DeleteUser(account string) error {
 	return global.GDB.Delete(&entity.MUser{
 		Account: account,
 	}).Error
+}
+
+// ResetPassword 修改密码
+func ResetPassword(user *entity.MUser) error {
+	newPassword := utils.AesEncrypt("666666")
+	return global.GDB.Transaction(func(tx *gorm.DB) error {
+		result := global.GDB.Where("account = ?", user.Account).First(user)
+		if result.Error != nil {
+			return errors.New("用户")
+		}
+		return tx.Model(user).Update("password", newPassword).Error
+	})
 }

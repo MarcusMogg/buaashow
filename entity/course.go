@@ -37,10 +37,11 @@ type MCourse struct {
 
 // CourseResp 接口返回的课程信息
 type CourseResp struct {
-	ID      uint   `json:"cid"`
-	Name    string `json:"name"`
-	Info    string `json:"info"`
-	Teacher string `json:"teacher"`
+	ID          uint   `json:"cid"`
+	Name        string `json:"name"`
+	Info        string `json:"info"`
+	Teacher     string `json:"teacher"`
+	TeacherName string `json:"teacher_name"`
 	Term
 }
 

@@ -48,6 +48,33 @@ func CreateTerm(c *gin.Context) {
 
 }
 
+// UpdateTerm gdoc
+// @Tags term
+// @Summary 修改一个学期,需管理员登录
+// @Produce application/json
+// @Param newTermData body entity.Term true "学期信息"
+// @Router /terms/{tid} [post]
+func UpdateTerm(c *gin.Context) {
+	var t entity.Term
+	tid, err := strconv.ParseUint(c.Param("tid"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	if err := c.ShouldBindJSON(&t); err == nil {
+		t.TID = uint(tid)
+		if err = service.UpdateTerm(&t); err == nil {
+			response.Ok(c)
+		} else {
+			response.FailWithMessage(err.Error(), c)
+		}
+	} else {
+		response.FailValidate(c)
+		zap.S().Debug(err)
+	}
+
+}
+
 // DeleteTerm gdoc
 // @Tags term
 // @Summary 删除一个学期,需管理员登录，注意，会同步删除该学期相关的所有课程、实验

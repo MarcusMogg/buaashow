@@ -70,12 +70,14 @@ func GetMyCourses(user *entity.MUser) []*entity.CourseResp {
 	var res []*entity.CourseResp
 	global.GDB.Model(&entity.MCourse{}).
 		Select(`m_courses.id,m_courses.name,m_courses.info,m_courses.teacher,
+			m_users.name as teacher_name,
 			m_courses.t_id, 
 			m_terms.t_name,
 			date_format(m_terms.begin,'%Y-%m-%d') as begin,
 			date_format(m_terms.end,'%Y-%m-%d') as end`).
-		Joins("INNER JOIN r_course_students ON r_course_students.course_id = m_courses.id").
-		Joins("INNER JOIN m_terms ON m_courses.t_id = m_terms.ID").
+		Joins("LEFT JOIN r_course_students ON r_course_students.course_id = m_courses.id").
+		Joins("LEFT JOIN m_terms ON m_courses.t_id = m_terms.ID").
+		Joins("LEFT JOIN m_users ON m_courses.teacher = m_users.account").
 		Where("r_course_students.user_id = ?", user.Account).
 		Find(&res)
 	return res
@@ -86,11 +88,13 @@ func GetCourseInfoByID(id uint) (*entity.CourseResp, error) {
 	var res entity.CourseResp
 	result := global.GDB.Model(&entity.MCourse{}).
 		Select(`m_courses.id,m_courses.name,m_courses.info,m_courses.teacher,
+				m_users.name as teacher_name,
 				m_courses.t_id, 
 				m_terms.t_name,
 				date_format(m_terms.begin,'%Y-%m-%d') as begin,
 				date_format(m_terms.end,'%Y-%m-%d') as end`).
-		Joins("INNER JOIN m_terms ON m_courses.t_id = m_terms.ID").
+		Joins("LEFT JOIN m_terms ON m_courses.t_id = m_terms.ID").
+		Joins("LEFT JOIN m_users ON m_courses.teacher = m_users.account").
 		Where("m_courses.id = ?", id).
 		First(&res)
 	if result.Error != nil {

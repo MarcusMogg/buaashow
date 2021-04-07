@@ -7,6 +7,7 @@ import (
 	"buaashow/api/img"
 	"buaashow/api/show"
 	"buaashow/api/swagger"
+	"buaashow/api/system"
 	"buaashow/api/user"
 	"buaashow/middleware"
 
@@ -30,5 +31,6 @@ func Router() *gin.Engine {
 	experiment.InitRouter(APIGroup)
 	show.InitRouter(APIGroup)
 	files.InitRouter(APIGroup)
+	system.InitRouter(APIGroup)
 	return Router
 }

@@ -69,7 +69,8 @@ type ExperimentResponse struct {
 	// course info
 	CourseID    uint   `json:"cid"`
 	CourseName  string `json:"cname"`
-	TeacherName string `json:"teacher"`
+	Teacher     string `json:"teacher"`
+	TeacherName string `json:"teacher_name"`
 	// YYYY-MM-DD HH-MM-SS
 	BeginTime string `json:"begin"`
 	EndTime   string `json:"end"`

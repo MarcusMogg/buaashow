@@ -231,9 +231,14 @@ func GetUserInfoList(c *gin.Context) {
 		response.FailValidate(c)
 		return
 	}
+	tp, err := strconv.ParseUint(c.DefaultQuery("type", "1"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
 	ac := c.Query("account")
 	size := 16
-	tot, res, err := service.GetUserInfoList(int(page), size, ac)
+	tot, res, err := service.GetUserInfoList(int(page), size, int(tp), ac)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -251,6 +256,23 @@ func GetUserInfoList(c *gin.Context) {
 func DeleteUser(c *gin.Context) {
 	name := c.Param("id")
 	err := service.DeleteUser(name)
+	if err == nil {
+		response.Ok(c)
+	} else {
+		zap.S().Debug(err.Error())
+		response.Fail(c)
+	}
+}
+
+// ResetUser gdoc
+// @Tags User
+// @Summary 重置用户密码 only ADMIN
+// @Router /user/del/{id} [delete]
+func ResetUser(c *gin.Context) {
+	name := c.Param("id")
+	var u entity.MUser
+	u.Account = name
+	err := service.ResetPassword(&u)
 	if err == nil {
 		response.Ok(c)
 	} else {

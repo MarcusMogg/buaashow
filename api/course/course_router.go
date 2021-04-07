@@ -27,6 +27,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		tr.GET("", middleware.JWTAuth(entity.Student), GetTerms)
 		tr.GET("all", GetAllTerms)
 		tr.POST("", middleware.JWTAuth(entity.Admin), CreateTerm)
+		tr.POST(":tid", middleware.JWTAuth(entity.Admin), UpdateTerm)
 		tr.DELETE(":tid", middleware.JWTAuth(entity.Admin), DeleteTerm)
 	}
 
