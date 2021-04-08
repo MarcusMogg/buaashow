@@ -91,6 +91,7 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 	var course entity.MCourse
 	var ca entity.RCourseStudent
 	var resources []string
+	var cname string
 	err := global.GDB.Where("id = ?", i.CID).First(&course).Error
 	if err != nil {
 		return nil, err
@@ -110,14 +111,16 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 	}
 	global.GDB.Model(&entity.MExperimentResource{}).
 		Select("file").Where("e_id = ?", i.ID).Find(&resources)
-
+	global.GDB.Model(&entity.MCourseName{}).
+		Where("id = ?", course.CID).
+		Select("name").First(&cname)
 	return &entity.ExperimentResponse{
 		ID:          i.ID,
 		Name:        i.Name,
 		Info:        i.Info,
 		Team:        i.Team,
 		CourseID:    i.CID,
-		CourseName:  course.Name,
+		CourseName:  cname,
 		Teacher:     ca.UserID,
 		TeacherName: teacherName,
 		BeginTime:   i.BeginTime.Format(global.TimeTemplateSec),
@@ -302,6 +305,8 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 	res.Type = int(sub.Type)
 	res.URL = sub.URL
 	res.Readme = sub.Readme
+	res.Thumbnail = sub.Thumbnail
+	res.GID = mid.GID
 	return nil
 }
 
@@ -344,6 +349,7 @@ func GetAllSubmission(eid uint, uid string) ([]*entity.SubmissionResp, error) {
 		res.Recommend = sub.Recommend
 		res.Groups = groups
 		res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
+		res.GID = mid.GID
 		return res, nil
 	}
 

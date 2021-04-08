@@ -21,12 +21,12 @@ type SummaryResp struct {
 
 // 检索参数 query
 type SearchParam struct {
-	CourseName string `form:"cname"`
-	Recommend  string `form:"rec"`
-	TermID     int    `form:"tid"`
-	Title      string `form:"title"`
-	PageNum    int    `form:"page"`
-	PageSize   int    `form:"size"`
+	NameID    int    `form:"nid"`
+	Recommend string `form:"rec"`
+	TermID    int    `form:"tid"`
+	Title     string `form:"title"`
+	PageNum   int    `form:"page"`
+	PageSize  int    `form:"size"`
 }
 
 type ShowID struct {

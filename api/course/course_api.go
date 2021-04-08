@@ -30,7 +30,7 @@ func CreateCourse(c *gin.Context) {
 	var req courseData
 	if err := c.ShouldBindJSON(&req); err == nil {
 		course := entity.MCourse{
-			Name:    req.Name,
+			CID:     req.CID,
 			Info:    req.Info,
 			Teacher: u.Account,
 			TID:     req.TID,

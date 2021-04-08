@@ -53,6 +53,7 @@ type MSubmission struct {
 	URL       string
 	OldURL    string
 	DocsURL   string
+	Thumbnail string
 	Readme    string
 	Recommend bool
 	Show      bool
@@ -93,6 +94,7 @@ type SubmissionResp struct {
 	Status    bool              `json:"status"`
 	Recommend bool              `json:"rec"`
 	StudentID string            `json:"uid"`
+	GID       string            `json:"gid"`
 	Groups    []*UserInfoSimple `json:"groups"`
 	UpdatedAt string            `json:"time"`
 	Name      string            `json:"name"`
@@ -100,4 +102,5 @@ type SubmissionResp struct {
 	Type      int               `json:"type"`
 	URL       string            `json:"url"`
 	Readme    string            `json:"readme"`
+	Thumbnail string            `json:"thumb"`
 }

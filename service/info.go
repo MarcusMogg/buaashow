@@ -12,7 +12,7 @@ func GetSummary(params *entity.SearchParam) (int64, []*entity.SummaryResp) {
 	var res []*entity.SummaryResp
 	db := global.GDB
 	db = db.Table("m_submissions").
-		Select(`m_courses.name as course_name,
+		Select(`m_course_names.name as course_name,
         m_submissions.e_id,
         m_submissions.g_id,
         m_users.name as user_name,
@@ -21,11 +21,12 @@ func GetSummary(params *entity.SearchParam) (int64, []*entity.SummaryResp) {
         m_submissions.type`).
 		Joins("INNER JOIN m_experiments ON m_experiments.id = m_submissions.e_id").
 		Joins("INNER JOIN m_courses ON m_courses.id = m_experiments.c_id").
-		Joins("INNER JOIN m_users ON m_users.account = m_submissions.g_id")
+		Joins("INNER JOIN m_users ON m_users.account = m_submissions.g_id").
+		Joins("INNER JOIN m_course_names ON m_courses.c_id = m_course_names.id")
 	zap.S().Debug(db.Statement.SQL.String())
 	//Where("m_submissions.show = true")
-	if len(params.CourseName) != 0 {
-		db = db.Where("m_courses.name = ?", params.CourseName)
+	if params.NameID != 0 {
+		db = db.Where("m_courses.c_id = ?", params.NameID)
 	}
 	if len(params.Recommend) != 0 {
 		db = db.Where("m_submissions.recommend = true")

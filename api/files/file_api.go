@@ -20,6 +20,16 @@ func Download(c *gin.Context) {
 	c.File(path.Join(global.GTmpPath, name))
 }
 
+// DownloadStatic gdoc
+// @Tags file
+// @Summary 获取文件
+// @Produce application/json
+// @Router /static/{name} [get]
+func DownloadStatic(c *gin.Context) {
+	name := c.Param("name")
+	c.File(path.Join(global.GConfig.Static, name))
+}
+
 // Upload gdoc
 // @Tags file
 // @Summary 上传文件

@@ -4,6 +4,7 @@ import (
 	"buaashow/global"
 	"buaashow/response"
 	"path"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +22,16 @@ func Upload(c *gin.Context) {
 		response.FailValidate(c)
 		return
 	}
+	height, err := strconv.ParseUint(c.DefaultQuery("height", "0"), 10, 0)
+	if err != nil {
+		response.FailWithMessage("参数错误", c)
+		return
+	}
+	width, err := strconv.ParseUint(c.DefaultQuery("width", "0"), 10, 0)
+	if err != nil {
+		response.FailWithMessage("参数错误", c)
+		return
+	}
 	iimg, imgType, err := decode(file)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
@@ -31,7 +42,8 @@ func Upload(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	res, err := resizeFile(file, iimg, imgType, baseName)
+	res, err := resizeFile(file, iimg, imgType, baseName,
+		size{width: uint(width), height: uint(height)})
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return

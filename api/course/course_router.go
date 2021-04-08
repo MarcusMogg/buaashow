@@ -33,8 +33,12 @@ func InitRouter(Router *gin.RouterGroup) {
 
 	cr := Router.Group("coursename")
 	{
-		cr.POST(":name", middleware.JWTAuth(entity.Admin), CreateCourseName)
-		cr.DELETE(":name", middleware.JWTAuth(entity.Admin), DeleteCourseName)
+		cr.POST("", middleware.JWTAuth(entity.Admin), CreateCourseName)
+		cr.POST("thumb", middleware.JWTAuth(entity.Admin), UpdateThumb)
+		cr.POST("info", middleware.JWTAuth(entity.Admin), UpdateInfo)
+		cr.POST("name", middleware.JWTAuth(entity.Admin), UpdateName)
+		cr.DELETE("", middleware.JWTAuth(entity.Admin), DeleteCourseName)
+		cr.GET("detail/:id", GetCourseNameDetails)
 		cr.GET("", GetCourseNames)
 	}
 }

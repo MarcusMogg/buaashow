@@ -145,7 +145,7 @@ func AddExpFile(c *gin.Context) {
 	}
 
 	filename := fmt.Sprintf("%d-%s", eid, file.Filename)
-	c.SaveUploadedFile(file, path.Join(global.GTmpPath, filename))
+	c.SaveUploadedFile(file, path.Join(global.GStaticPath, filename))
 
 	if err = service.AddExpFile(uint(eid), u.Account, filename); err == nil {
 		response.Ok(c)
@@ -244,6 +244,7 @@ func SubmitExp(c *gin.Context) {
 			URL:       req.URL,
 			Readme:    req.Readme,
 			UpdatedAt: now,
+			Thumbnail: req.Thumbnail,
 		}
 		if err = service.Submit(&submission, u.Account); err != nil {
 			response.FailWithMessage(err.Error(), c)

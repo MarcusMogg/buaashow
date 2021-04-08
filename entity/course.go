@@ -20,7 +20,10 @@ type MTerm struct {
 
 // MCourseName 限定课程名称，用于展示
 type MCourseName struct {
-	Name string `gorm:"primarykey"`
+	ID        uint   `gorm:"primarykey" json:"id"`
+	Name      string `gorm:"unique" json:"name"`
+	Thumbnail string `json:"thumb"`
+	Info      string `json:"info"`
 }
 
 // MCourse 课程信息
@@ -29,7 +32,7 @@ type MCourseName struct {
 type MCourse struct {
 	ID   uint `gorm:"primarykey"`
 	TID  uint
-	Name string
+	CID  uint
 	Info string
 	// Teacher Account
 	Teacher string

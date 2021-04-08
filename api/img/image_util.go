@@ -11,10 +11,8 @@ import (
 	"mime/multipart"
 	"os"
 	"path"
-	"time"
 
 	"github.com/nfnt/resize"
-	"go.uber.org/zap"
 )
 
 // 支持的图像类型
@@ -39,11 +37,11 @@ type size struct {
 	suffix string
 }
 
-var targetSize []size = []size{
-	{width: 60, height: 45, suffix: "s"},
-	{width: 130, height: 97, suffix: "m"},
-	{width: 320, height: 240, suffix: "l"},
-}
+// var targetSize []size = []size{
+// 	{width: 60, height: 45, suffix: "s"},
+// 	{width: 130, height: 97, suffix: "m"},
+// 	{width: 320, height: 240, suffix: "l"},
+// }
 
 func decode(file *multipart.FileHeader) (image.Image, string, error) {
 	f, err := file.Open()
@@ -107,31 +105,55 @@ func saveImage(file *multipart.FileHeader, imageF image.Image, fileType, dst str
 	return nil
 }
 
-func resizeFile(file *multipart.FileHeader, imageF image.Image, fileType, baseName string) ([]string, error) {
-	var res []string = make([]string, 0)
+// func resizeTFile(file *multipart.FileHeader, imageF image.Image, fileType, baseName string) ([]string, error) {
+// 	var res []string = make([]string, 0)
+// 	if fileType != GIF {
+// 		start := time.Now()
+// 		for _, i := range targetSize {
+// 			if imageF.Bounds().Max.X <= int(i.width) {
+// 				break
+// 			}
+// 			resFile := resize.Thumbnail(i.width, i.height, imageF, resize.Lanczos3)
+// 			if err := saveImage(file, resFile, fileType, baseName+i.suffix); err != nil {
+// 				return res, err
+// 			}
+// 			res = append(res, baseName+i.suffix+"."+fileType)
+// 			zap.S().Debugf("次resize时间为%s", time.Now().Sub(start).String())
+// 		}
+// 		if err := saveImage(file, imageF, fileType, baseName); err != nil {
+// 			return res, err
+// 		}
+// 		res = append(res, baseName+"."+fileType)
+// 	} else {
+// 		if err := saveImage(file, nil, fileType, baseName); err != nil {
+// 			return res, err
+// 		}
+// 		res = append(res, baseName+"."+fileType)
+// 	}
+// 	return res, nil
+// }
+
+func resizeFile(file *multipart.FileHeader, imageF image.Image, fileType, baseName string, s size) (string, error) {
+	var res string
 
 	if fileType != GIF {
-		start := time.Now()
-		for _, i := range targetSize {
-			if imageF.Bounds().Max.X <= int(i.width) {
-				break
-			}
-			resFile := resize.Thumbnail(i.width, i.height, imageF, resize.Lanczos3)
-			if err := saveImage(file, resFile, fileType, baseName+i.suffix); err != nil {
+		if s.width != 0 || s.height != 0 {
+			resFile := resize.Resize(s.width, s.height, imageF, resize.Lanczos3)
+			if err := saveImage(file, resFile, fileType, baseName+s.suffix); err != nil {
 				return res, err
 			}
-			res = append(res, baseName+i.suffix+"."+fileType)
-			zap.S().Debugf("次resize时间为%s", time.Now().Sub(start).String())
+			res = baseName + s.suffix + "." + fileType
+		} else {
+			if err := saveImage(file, imageF, fileType, baseName); err != nil {
+				return res, err
+			}
+			res = baseName + "." + fileType
 		}
-		if err := saveImage(file, imageF, fileType, baseName); err != nil {
-			return res, err
-		}
-		res = append(res, baseName+"."+fileType)
 	} else {
 		if err := saveImage(file, nil, fileType, baseName); err != nil {
 			return res, err
 		}
-		res = append(res, baseName+"."+fileType)
+		res = baseName + "." + fileType
 	}
 	return res, nil
 }

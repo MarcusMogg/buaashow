@@ -9,5 +9,9 @@ func InitRouter(router *gin.RouterGroup) {
 		rg.POST("", Upload)
 		rg.GET("/:name", Download)
 	}
+	sg := router.Group("static")
+	{
+		sg.GET("/:name", Download)
+	}
 
 }

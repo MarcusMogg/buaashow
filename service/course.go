@@ -29,12 +29,15 @@ func CreateCourse(course *entity.MCourse, user *entity.MUser) (*entity.CourseRes
 		Auth:   entity.Owner,
 	}
 	var t entity.MTerm
+	var cname string
 	if err := global.GDB.Transaction(func(tx *gorm.DB) error {
 		result := tx.Where("id = ?", course.TID).First(&t)
 		if result.Error != nil {
 			return errors.New("该学期不存在")
 		}
-		result = tx.Where("name = ?", course.Name).First(&entity.MCourseName{})
+		result = tx.Model(&entity.MCourseName{}).
+			Where("id = ?", course.CID).
+			Select("name").First(&cname)
 		if result.Error != nil {
 			return errors.New("课程名称不存在")
 		}
@@ -53,7 +56,7 @@ func CreateCourse(course *entity.MCourse, user *entity.MUser) (*entity.CourseRes
 	}
 	return &entity.CourseResp{
 		ID:      course.ID,
-		Name:    course.Name,
+		Name:    cname,
 		Info:    course.Info,
 		Teacher: course.Teacher,
 		Term: entity.Term{
@@ -69,7 +72,7 @@ func CreateCourse(course *entity.MCourse, user *entity.MUser) (*entity.CourseRes
 func GetMyCourses(user *entity.MUser) []*entity.CourseResp {
 	var res []*entity.CourseResp
 	global.GDB.Model(&entity.MCourse{}).
-		Select(`m_courses.id,m_courses.name,m_courses.info,m_courses.teacher,
+		Select(`m_courses.id,m_course_names.name,m_courses.info,m_courses.teacher,
 			m_users.name as teacher_name,
 			m_courses.t_id, 
 			m_terms.t_name,
@@ -78,6 +81,7 @@ func GetMyCourses(user *entity.MUser) []*entity.CourseResp {
 		Joins("LEFT JOIN r_course_students ON r_course_students.course_id = m_courses.id").
 		Joins("LEFT JOIN m_terms ON m_courses.t_id = m_terms.ID").
 		Joins("LEFT JOIN m_users ON m_courses.teacher = m_users.account").
+		Joins("LEFT JOIN m_course_names ON m_courses.c_id = m_course_names.id").
 		Where("r_course_students.user_id = ?", user.Account).
 		Find(&res)
 	return res
@@ -87,7 +91,7 @@ func GetMyCourses(user *entity.MUser) []*entity.CourseResp {
 func GetCourseInfoByID(id uint) (*entity.CourseResp, error) {
 	var res entity.CourseResp
 	result := global.GDB.Model(&entity.MCourse{}).
-		Select(`m_courses.id,m_courses.name,m_courses.info,m_courses.teacher,
+		Select(`m_courses.id,m_course_names.name,m_courses.info,m_courses.teacher,
 				m_users.name as teacher_name,
 				m_courses.t_id, 
 				m_terms.t_name,
@@ -95,6 +99,7 @@ func GetCourseInfoByID(id uint) (*entity.CourseResp, error) {
 				date_format(m_terms.end,'%Y-%m-%d') as end`).
 		Joins("LEFT JOIN m_terms ON m_courses.t_id = m_terms.ID").
 		Joins("LEFT JOIN m_users ON m_courses.teacher = m_users.account").
+		Joins("LEFT JOIN m_course_names ON m_courses.c_id = m_course_names.id").
 		Where("m_courses.id = ?", id).
 		First(&res)
 	if result.Error != nil {
