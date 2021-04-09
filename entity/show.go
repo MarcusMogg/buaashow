@@ -17,6 +17,7 @@ type SummaryResp struct {
 	Info       string `json:"info"`
 	Type       int    `json:"type"`
 	URL        string `json:"url"`
+	Thumbnail  string `json:"thumb"`
 }
 
 // 检索参数 query
