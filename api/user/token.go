@@ -14,6 +14,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // 生成token
@@ -71,6 +72,7 @@ func ticketVerify(ticket string, serviceURL string) (user *entity.MUser, err err
 	}
 	if user.Role != entity.Role(res.Data.Role) {
 		err = errors.New("角色不匹配")
+		zap.S().Debug(string(resp))
 	}
 	return
 }

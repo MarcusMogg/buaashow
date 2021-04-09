@@ -48,8 +48,8 @@ func LoginByTicket(c *gin.Context) {
 		user, err := ticketVerify(r.Authorization, r.ServiceURL)
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
+			return
 		}
-
 		tokenNext(c, user)
 	} else {
 		response.FailValidate(c)
