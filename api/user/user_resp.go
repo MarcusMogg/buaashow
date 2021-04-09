@@ -16,6 +16,6 @@ type ticketRes struct {
 	Msg  string `json:"msg"`
 	Data struct {
 		ID   string `json:"id"`
-		Role int    `json:"role"`
+		Role string `json:"role"`
 	} `json:"data"`
 }

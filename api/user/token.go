@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -70,7 +71,14 @@ func ticketVerify(ticket string, serviceURL string) (user *entity.MUser, err err
 	if err != nil {
 		return
 	}
-	if user.Role != entity.Role(res.Data.Role) {
+	r, err := strconv.Atoi(res.Data.Role)
+	if err != nil {
+		return
+	}
+	if r > 3 {
+		r = 3
+	}
+	if user.Role != entity.Role(r) {
 		err = errors.New("角色不匹配")
 		zap.S().Debug(string(resp))
 	}
