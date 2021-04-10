@@ -259,7 +259,7 @@ func Submit(s *entity.MSubmission, uid string) error {
 		}
 
 		if mid.Status {
-			return tx.Save(s).Error
+			return tx.Updates(s).Error
 		}
 		if err := tx.Create(s).Error; err != nil {
 			return err

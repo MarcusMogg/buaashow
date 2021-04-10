@@ -12,14 +12,6 @@ func GetSummary(params *entity.SearchParam) (int64, []*entity.SummaryResp) {
 	var res []*entity.SummaryResp
 	db := global.GDB
 	db = db.Table("m_submissions").
-		Select(`m_course_names.name as course_name,
-        m_submissions.e_id,
-        m_submissions.g_id,
-        m_users.name as user_name,
-        m_submissions.name,
-        m_submissions.info,
-        m_submissions.type,
-		m_submissions.thumbnail`).
 		Joins("INNER JOIN m_experiments ON m_experiments.id = m_submissions.e_id").
 		Joins("INNER JOIN m_courses ON m_courses.id = m_experiments.c_id").
 		Joins("INNER JOIN m_users ON m_users.account = m_submissions.g_id").
@@ -30,7 +22,7 @@ func GetSummary(params *entity.SearchParam) (int64, []*entity.SummaryResp) {
 		db = db.Where("m_courses.c_id = ?", params.NameID)
 	}
 	if len(params.Recommend) != 0 {
-		db = db.Where("m_submissions.recommend = true")
+		db = db.Where("m_submissions.recommend = ?", true)
 	}
 	if params.TermID != 0 {
 		db = db.Where("m_courses.t_id = ?", params.TermID)
@@ -46,8 +38,17 @@ func GetSummary(params *entity.SearchParam) (int64, []*entity.SummaryResp) {
 	}
 	var tot int64
 	offset := (params.PageNum - 1) * params.PageSize
+	db.Count(&tot)
+	db.Select(`m_course_names.name as course_name,
+		m_submissions.e_id,
+		m_submissions.g_id,
+		m_users.name as user_name,
+		m_submissions.name,
+		m_submissions.info,
+		m_submissions.type,
+		m_submissions.thumbnail`).
+		Offset(offset).Limit(params.PageSize).Scan(&res)
 
-	db.Offset(offset).Limit(params.PageSize).Scan(&res).Count(&tot)
 	//db.Scan(&res)
 	for i := range res {
 		//zap.S().Debug(res[i])
