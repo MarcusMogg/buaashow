@@ -288,6 +288,8 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 		return err
 	}
 	res.Groups = groups
+	res.GID = mid.GID
+
 	if !mid.Status {
 		res.Status = false
 		return nil
@@ -306,7 +308,7 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 	res.URL = sub.URL
 	res.Readme = sub.Readme
 	res.Thumbnail = sub.Thumbnail
-	res.GID = mid.GID
+
 	return nil
 }
 
@@ -327,15 +329,12 @@ func GetAllSubmission(eid uint, uid string) ([]*entity.SubmissionResp, error) {
 		res := &entity.SubmissionResp{}
 		res.StudentID = uid
 		var mid entity.MExperimentSubmit
-		var sub entity.MSubmission
+
 		if err := global.GDB.Where("e_id = ? AND uid = ?", eid, uid).
 			First(&mid).Error; err != nil {
 			return res, err
 		}
-		if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
-			First(&sub).Error; err != nil {
-			return res, err
-		}
+
 		var groups []*entity.UserInfoSimple
 
 		if err := global.GDB.Model(&entity.MExperimentSubmit{}).
@@ -345,11 +344,20 @@ func GetAllSubmission(eid uint, uid string) ([]*entity.SubmissionResp, error) {
 			Find(&groups).Error; err != nil {
 			return nil, err
 		}
-		res.Status = true
-		res.Recommend = sub.Recommend
+		res.Status = mid.Status
 		res.Groups = groups
-		res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
 		res.GID = mid.GID
+
+		if mid.Status {
+			var sub entity.MSubmission
+			if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
+				First(&sub).Error; err != nil {
+				return res, err
+			}
+			res.Recommend = sub.Recommend
+			res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
+		}
+
 		return res, nil
 	}
 
