@@ -4,12 +4,12 @@ definitions:
     properties:
       info:
         type: string
-      name:
-        type: string
+      name_id:
+        type: integer
       tid:
         type: integer
     required:
-    - name
+    - name_id
     - tid
     type: object
   course.studentsData:
@@ -33,6 +33,8 @@ definitions:
         type: string
       teacher:
         type: string
+      teacher_name:
+        type: string
       tend:
         type: string
       tid:
@@ -53,6 +55,12 @@ definitions:
         type: string
       name:
         type: string
+      team:
+        type: boolean
+    required:
+    - begin
+    - end
+    - name
     type: object
   entity.ExperimentResponse:
     properties:
@@ -76,11 +84,19 @@ definitions:
         items:
           type: string
         type: array
+      submit:
+        type: boolean
       teacher:
         type: string
+      teacher_name:
+        type: string
+      team:
+        type: boolean
     type: object
   entity.SubmissionResp:
     properties:
+      gid:
+        type: string
       groups:
         items:
           $ref: '#/definitions/entity.UserInfoSimple'
@@ -91,12 +107,18 @@ definitions:
         type: string
       readme:
         type: string
+      rec:
+        type: boolean
       status:
         type: boolean
+      thumb:
+        type: string
       time:
         type: string
       type:
         type: integer
+      uid:
+        type: string
       url:
         type: string
     type: object
@@ -138,6 +160,8 @@ definitions:
       name:
         type: string
       readme:
+        type: string
+      thumb:
         type: string
       type:
         type: integer
@@ -394,13 +418,18 @@ paths:
       summary: 获取coursenames
       tags:
       - coursename
-  /coursename/{name}:
+    post:
+      summary: 修改大图 only ADMIN
+      tags:
+      - coursename
+  /coursename/:
     delete:
       summary: 添加一个coursename only ADMIN
       tags:
       - coursename
-    post:
-      summary: 添加一个coursename only ADMIN
+  /coursename/detail/{id}:
+    get:
+      summary: 获取coursenames
       tags:
       - coursename
   /exp:
@@ -489,6 +518,13 @@ paths:
       summary: 删除实验资源文件
       tags:
       - exp
+  /exp/{id}/rec/{account}:
+    get:
+      produces:
+      - application/json
+      summary: 将作业设为推荐
+      tags:
+      - exp
   /exp/{id}/stat:
     get:
       produces:
@@ -534,6 +570,26 @@ paths:
         "200":
           description: ""
       summary: 提交作业
+      tags:
+      - exp
+  /exp/{id}/team:
+    get:
+      produces:
+      - application/json
+      summary: 查看当前用户的组队信息
+      tags:
+      - exp
+  /exp/{id}/team/{gid}:
+    delete:
+      produces:
+      - application/json
+      summary: 退出队伍
+      tags:
+      - exp
+    get:
+      produces:
+      - application/json
+      summary: 加入队伍
       tags:
       - exp
   /file:
@@ -601,6 +657,13 @@ paths:
       summary: 图片展示
       tags:
       - show
+  /static/{name}:
+    get:
+      produces:
+      - application/json
+      summary: 获取文件
+      tags:
+      - file
   /terms:
     get:
       produces:
@@ -642,6 +705,19 @@ paths:
       summary: 删除一个学期,需管理员登录，注意，会同步删除该学期相关的所有课程、实验
       tags:
       - term
+    post:
+      parameters:
+      - description: 学期信息
+        in: body
+        name: newTermData
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Term'
+      produces:
+      - application/json
+      summary: 修改一个学期,需管理员登录
+      tags:
+      - term
   /terms/all:
     get:
       produces:
@@ -668,7 +744,7 @@ paths:
       - User
   /user/del/{id}:
     delete:
-      summary: 删除一个用户 only ADMIN
+      summary: 重置用户密码 only ADMIN
       tags:
       - User
   /user/email:

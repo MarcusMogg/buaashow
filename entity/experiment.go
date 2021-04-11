@@ -9,13 +9,13 @@ type MExperiment struct {
 	ID        uint `gorm:"primarykey"`
 	CID       uint
 	Team      bool
-	Name      string
+	Name      string `gorm:"not null"`
 	Info      string
 	BeginTime time.Time
 	EndTime   time.Time
 }
 
-type MExperimentResource struct {
+type RExperimentResource struct {
 	EID  uint   `gorm:"primarykey"`
 	File string `gorm:"primarykey"`
 }

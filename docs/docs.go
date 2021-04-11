@@ -296,20 +296,28 @@ var doc = `{
                     "coursename"
                 ],
                 "summary": "获取coursenames"
-            }
-        },
-        "/coursename/{name}": {
+            },
             "post": {
                 "tags": [
                     "coursename"
                 ],
-                "summary": "添加一个coursename only ADMIN"
-            },
+                "summary": "修改大图 only ADMIN"
+            }
+        },
+        "/coursename/": {
             "delete": {
                 "tags": [
                     "coursename"
                 ],
                 "summary": "添加一个coursename only ADMIN"
+            }
+        },
+        "/coursename/detail/{id}": {
+            "get": {
+                "tags": [
+                    "coursename"
+                ],
+                "summary": "获取coursenames"
             }
         },
         "/exp": {
@@ -447,6 +455,17 @@ var doc = `{
                 }
             }
         },
+        "/exp/{id}/rec/{account}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "将作业设为推荐"
+            }
+        },
         "/exp/{id}/stat": {
             "get": {
                 "produces": [
@@ -518,6 +537,37 @@ var doc = `{
                         "description": ""
                     }
                 }
+            }
+        },
+        "/exp/{id}/team": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "查看当前用户的组队信息"
+            }
+        },
+        "/exp/{id}/team/{gid}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "加入队伍"
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "exp"
+                ],
+                "summary": "退出队伍"
             }
         },
         "/file": {
@@ -621,6 +671,17 @@ var doc = `{
                 "summary": "图片展示"
             }
         },
+        "/static/{name}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "file"
+                ],
+                "summary": "获取文件"
+            }
+        },
         "/terms": {
             "get": {
                 "produces": [
@@ -686,6 +747,26 @@ var doc = `{
             }
         },
         "/terms/{tid}": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "term"
+                ],
+                "summary": "修改一个学期,需管理员登录",
+                "parameters": [
+                    {
+                        "description": "学期信息",
+                        "name": "newTermData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Term"
+                        }
+                    }
+                ]
+            },
             "delete": {
                 "produces": [
                     "application/json"
@@ -728,7 +809,7 @@ var doc = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "删除一个用户 only ADMIN"
+                "summary": "重置用户密码 only ADMIN"
             }
         },
         "/user/email": {
@@ -1012,15 +1093,15 @@ var doc = `{
         "course.courseData": {
             "type": "object",
             "required": [
-                "name",
+                "name_id",
                 "tid"
             ],
             "properties": {
                 "info": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
+                "name_id": {
+                    "type": "integer"
                 },
                 "tid": {
                     "type": "integer"
@@ -1062,6 +1143,9 @@ var doc = `{
                 "teacher": {
                     "type": "string"
                 },
+                "teacher_name": {
+                    "type": "string"
+                },
                 "tend": {
                     "type": "string"
                 },
@@ -1075,6 +1159,11 @@ var doc = `{
         },
         "entity.ExperimentReq": {
             "type": "object",
+            "required": [
+                "begin",
+                "end",
+                "name"
+            ],
             "properties": {
                 "begin": {
                     "description": "YYYY-MM-DD HH-MM-SS",
@@ -1088,6 +1177,9 @@ var doc = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "team": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1123,14 +1215,26 @@ var doc = `{
                         "type": "string"
                     }
                 },
+                "submit": {
+                    "type": "boolean"
+                },
                 "teacher": {
                     "type": "string"
+                },
+                "teacher_name": {
+                    "type": "string"
+                },
+                "team": {
+                    "type": "boolean"
                 }
             }
         },
         "entity.SubmissionResp": {
             "type": "object",
             "properties": {
+                "gid": {
+                    "type": "string"
+                },
                 "groups": {
                     "type": "array",
                     "items": {
@@ -1146,14 +1250,23 @@ var doc = `{
                 "readme": {
                     "type": "string"
                 },
+                "rec": {
+                    "type": "boolean"
+                },
                 "status": {
                     "type": "boolean"
+                },
+                "thumb": {
+                    "type": "string"
                 },
                 "time": {
                     "type": "string"
                 },
                 "type": {
                     "type": "integer"
+                },
+                "uid": {
+                    "type": "string"
                 },
                 "url": {
                     "type": "string"
@@ -1218,6 +1331,9 @@ var doc = `{
                     "type": "string"
                 },
                 "readme": {
+                    "type": "string"
+                },
+                "thumb": {
                     "type": "string"
                 },
                 "type": {

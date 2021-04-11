@@ -12,8 +12,8 @@ type Term struct {
 
 // MTerm 学期
 type MTerm struct {
-	ID    uint `gorm:"primarykey"`
-	TName string
+	ID    uint   `gorm:"primarykey"`
+	TName string `gorm:"unique; not null"`
 	Begin time.Time
 	End   time.Time
 }
@@ -21,7 +21,7 @@ type MTerm struct {
 // MCourseName 限定课程名称，用于展示
 type MCourseName struct {
 	ID        uint   `gorm:"primarykey" json:"id"`
-	Name      string `gorm:"unique" json:"name"`
+	Name      string `gorm:"unique; not null" json:"name"`
 	Thumbnail string `json:"thumb"`
 	Info      string `json:"info"`
 }

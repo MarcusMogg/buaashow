@@ -63,8 +63,8 @@ func AddExpFile(eid uint, uid, filename string) error {
 		return errors.New("权限不足")
 	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
-		return tx.FirstOrCreate(&entity.MExperimentResource{},
-			entity.MExperimentResource{
+		return tx.FirstOrCreate(&entity.RExperimentResource{},
+			entity.RExperimentResource{
 				EID:  eid,
 				File: filename,
 			}).Error
@@ -80,7 +80,7 @@ func DeleteExpFile(eid uint, uid, filename string) error {
 		return errors.New("权限不足")
 	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
-		return tx.Delete(&entity.MExperimentResource{
+		return tx.Delete(&entity.RExperimentResource{
 			EID:  eid,
 			File: filename,
 		}).Error
@@ -109,7 +109,7 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 	if len(teacherName) == 0 {
 		teacherName = ca.UserID
 	}
-	global.GDB.Model(&entity.MExperimentResource{}).
+	global.GDB.Model(&entity.RExperimentResource{}).
 		Select("file").Where("e_id = ?", i.ID).Find(&resources)
 	global.GDB.Model(&entity.MCourseName{}).
 		Where("id = ?", course.CID).

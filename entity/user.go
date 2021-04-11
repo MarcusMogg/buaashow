@@ -5,10 +5,10 @@ import "time"
 // MUser 数据库用户表
 type MUser struct {
 	Account   string `gorm:"not null;unique;primarykey"`
+	Password  string `gorm:"not null" json:"-"`
 	CreatedAt time.Time
 	Name      string
 	Email     string
-	Password  string `gorm:"not null" json:"-"`
 	Role      Role
 }
 
