@@ -177,10 +177,13 @@ func ToUnzip(eid uint, gid string, file string) error {
 	if !ok {
 		return errors.New("ToUnzip 初始化异常")
 	}
-	e.fileToDo <- info{
-		gid:     gid,
-		tmpPath: filepath.Join(global.GTmpPath, file),
-	}
+	// no wait
+	go func() {
+		e.fileToDo <- info{
+			gid:     gid,
+			tmpPath: filepath.Join(global.GTmpPath, file),
+		}
+	}()
 	return nil
 }
 
