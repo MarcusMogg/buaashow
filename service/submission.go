@@ -93,14 +93,28 @@ func createDir(dir string) error {
 func worker(dirPath string, file *info) {
 	// 创建作业根目录
 	dir := fmt.Sprintf("%s%s/show", dirPath, file.gid)
+	logfile := fmt.Sprintf("%s%s/log", dirPath, file.gid)
 	err := createDir(dir)
 	if err != nil {
 		return
 	}
+	var msg string
 	err = utils.UnZip(file.tmpPath, dir)
 	if err != nil {
 		zap.S().Errorf("解压错误 %s\n", err.Error())
+		msg = fmt.Sprintf("[%s] 解压错误 %s\n", time.Now().Local().Format(global.TimeTemplateSec), err.Error())
+	} else {
+		msg = fmt.Sprintf("[%s] 提交成功\n", time.Now().Local().Format(global.TimeTemplateSec))
 	}
+	f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		zap.S().Errorf("打开日志文件错误 %s\n", err.Error())
+		return
+	}
+	f.Write([]byte(msg))
+	f.Close()
+	copy(logfile, filepath.Join(dir, "log"))
+	copy(file.tmpPath, fmt.Sprintf("%s%s/submission.zip", dirPath, file.gid))
 }
 
 func updateEndtime(e *entity.MExperiment) {
