@@ -71,6 +71,7 @@ func Reccommend(eid uint, uid, tid string) error {
 		rec.Rec = true
 		return global.GDB.Save(&rec).Error
 	} else {
+		// FIXME: if file has been deleted?
 		return global.GDB.Model(&entity.MRecSubmission{}).
 			Where("e_id = ? AND g_id = ?", eid, mid.GID).
 			Update("rec", true).Error

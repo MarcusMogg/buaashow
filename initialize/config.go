@@ -36,7 +36,7 @@ func config() {
 	global.GStaticPath = global.GResourcesPath + "static/"
 	global.GCoursePath = global.GResourcesPath + "course/"
 	global.GTmpPath = global.GResourcesPath + "tmp/"
-
+	global.GShowPath = global.GResourcesPath + "show/"
 	global.GVP = v
 }
 
