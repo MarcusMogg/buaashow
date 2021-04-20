@@ -19,9 +19,7 @@ import (
 // @Produce application/json
 // @Router /show/x/{showid}/{filepath} [get]
 func Show() func(c *gin.Context) {
-	fs := gin.Dir(global.GCoursePath, false)
-	// fileServer := http.StripPrefix("/show", http.FileServer(fs))
-	canShow := true
+	fs := gin.Dir(global.GShowPath, false)
 	return func(c *gin.Context) {
 		sid := c.Param("showid")
 		s, err := entity.DecodeShowID(sid)
@@ -30,8 +28,9 @@ func Show() func(c *gin.Context) {
 			c.Status(http.StatusNotFound)
 			return
 		}
-		dir := fmt.Sprintf("%d/%s/show", s.EID, s.GID)
+		dir := fmt.Sprintf("%d/%s/", s.EID, s.GID)
 		file := c.Param("filepath")
+		canShow := service.CheckRecommend(s.GID, s.EID)
 		if !canShow {
 			c.Status(http.StatusNotFound)
 			return
@@ -42,23 +41,12 @@ func Show() func(c *gin.Context) {
 			file = "404.html"
 			f, err = fs.Open(path.Join(dir, file))
 			if err != nil {
-
 				c.Status(http.StatusNotFound)
 				return
 			}
 		}
 		f.Close()
-		/* FIXME: 是否屏蔽列出文件夹内容？
-		info, err := f.Stat()
-		if err != nil {
-			c.Status(http.StatusNotFound)
-			return
-		}
-		if info.IsDir() {
-			c.Status(http.StatusNotFound)
-			return
-		}*/
-		c.File(path.Join(global.GCoursePath, dir, file))
+		c.File(path.Join(global.GShowPath, dir, file))
 	}
 }
 
@@ -92,6 +80,90 @@ func Readme(c *gin.Context) {
 	if err != nil {
 		zap.S().Debug(err)
 		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	canShow := service.CheckRecommend(s.GID, s.EID)
+	if !canShow {
+		response.FailWithMessage("权限不足", c)
+		return
+	}
+	var res entity.SubmissionResp
+	if err := service.GetRecSubmission(s.EID, s.GID, &res); err == nil {
+		for i := range res.Groups {
+			res.Groups[i].Account = ""
+		}
+		response.OkWithData(res, c)
+	} else {
+		zap.S().Debug(err)
+		response.FailWithMessage(err.Error(), c)
+	}
+}
+
+// Preview gdoc
+// @Tags show
+// @Summary 图片展示
+// @Produce application/json
+// @Router /show/preview/{showid}/{filepath} [get]
+func Preview() func(c *gin.Context) {
+	fs := gin.Dir(global.GCoursePath, false)
+	return func(c *gin.Context) {
+		sid := c.Param("showid")
+		s, err := entity.DecodeShowID(sid)
+		if err != nil {
+			zap.S().Debug(err)
+			c.Status(http.StatusNotFound)
+			return
+		}
+		dir := fmt.Sprintf("%d/%s/show", s.EID, s.GID)
+		file := c.Param("filepath")
+		claim, ok := c.Get("user")
+		if !ok {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		u := claim.(*entity.MUser)
+		canShow := u.Role >= entity.Teacher || service.CheckInTeam(u.Account, s.GID, s.EID)
+		if !canShow {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		f, err := fs.Open(path.Join(dir, file))
+		if err != nil {
+			// default 404
+			file = "404.html"
+			f, err = fs.Open(path.Join(dir, file))
+			if err != nil {
+				c.Status(http.StatusNotFound)
+				return
+			}
+		}
+		f.Close()
+		c.File(path.Join(global.GCoursePath, dir, file))
+	}
+}
+
+// Readme gdoc
+// @Tags show
+// @Summary 简介
+// @Produce application/json
+// @Router /show/preview/readme/{showid} [get]
+func PreReadme(c *gin.Context) {
+	sid := c.Param("showid")
+	s, err := entity.DecodeShowID(sid)
+	if err != nil {
+		zap.S().Debug(err)
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("权限不足", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	canShow := u.Role >= entity.Teacher || service.CheckInTeam(u.Account, s.GID, s.EID)
+	if !canShow {
+		c.Status(http.StatusNotFound)
 		return
 	}
 	var res entity.SubmissionResp

@@ -24,6 +24,7 @@ func DBTables() {
 	global.GDB.AutoMigrate(&entity.MExperiment{})
 	global.GDB.AutoMigrate(&entity.MExperimentSubmit{})
 	global.GDB.AutoMigrate(&entity.MSubmission{})
+	global.GDB.AutoMigrate(&entity.MRecSubmission{})
 	global.GDB.AutoMigrate(&entity.RExperimentResource{})
 	service.InitSubmitThread()
 }

@@ -29,8 +29,11 @@ var GImgPath = GResourcesPath + "img/"
 // GStaticPath 静态资源文件路径
 var GStaticPath = GResourcesPath + "static/"
 
-// GCoursePath 静态资源文件路径
+// GCoursePath 课程文件路径
 var GCoursePath = GResourcesPath + "course/"
 
 // GTmpPath 临时文件路径
 var GTmpPath = GResourcesPath + "tmp/"
+
+// GShowPath 展示文件路径
+var GShowPath = GResourcesPath + "show/"

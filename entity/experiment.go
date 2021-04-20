@@ -6,13 +6,11 @@ import (
 
 // MExperiment 数据库实现信息表
 type MExperiment struct {
-	ID        uint `gorm:"primarykey"`
-	CID       uint
-	Team      bool
-	Name      string `gorm:"not null"`
-	Info      string
-	BeginTime time.Time
-	EndTime   time.Time
+	ID   uint `gorm:"primarykey"`
+	CID  uint
+	Team bool
+	Name string `gorm:"not null"`
+	Info string
 }
 
 type RExperimentResource struct {
@@ -51,12 +49,10 @@ type MSubmission struct {
 	Info      string
 	Type      SummitType
 	URL       string
-	OldURL    string
-	DocsURL   string
+	DistURL   string
+	SrcURL    string
 	Thumbnail string
 	Readme    string
-	Recommend bool
-	Show      bool
 	UpdatedAt time.Time
 }
 
@@ -85,8 +81,8 @@ type ExperimentReq struct {
 	Info string `json:"info"`
 	Team bool   `json:"team"`
 	// YYYY-MM-DD HH-MM-SS
-	BeginTime string `json:"begin" binding:"required"`
-	EndTime   string `json:"end" binding:"required"`
+	//BeginTime string `json:"begin" binding:"required"`
+	//EndTime   string `json:"end" binding:"required"`
 }
 
 // SubmissionResp 作业信息
@@ -103,4 +99,5 @@ type SubmissionResp struct {
 	URL       string            `json:"url"`
 	Readme    string            `json:"readme"`
 	Thumbnail string            `json:"thumb"`
+	ShowID    string            `json:"showid"`
 }

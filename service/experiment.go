@@ -49,7 +49,7 @@ func UpdateExp(e *entity.MExperiment, uid string) error {
 		if err := tx.Save(e).Error; err != nil {
 			return err
 		}
-		updateEndtime(e)
+		//updateEndtime(e)
 		return nil
 	})
 }
@@ -123,9 +123,9 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 		CourseName:  cname,
 		Teacher:     ca.UserID,
 		TeacherName: teacherName,
-		BeginTime:   i.BeginTime.Format(global.TimeTemplateSec),
-		EndTime:     i.EndTime.Format(global.TimeTemplateSec),
-		Resources:   resources,
+		//BeginTime:   i.BeginTime.Format(global.TimeTemplateSec),
+		//EndTime:     i.EndTime.Format(global.TimeTemplateSec),
+		Resources: resources,
 	}, nil
 }
 
@@ -220,42 +220,47 @@ func Submit(s *entity.MSubmission, uid string) error {
 		s.GID = mid.GID
 
 		if err := tx.Where("id = ?", s.EID).
-			Select("begin_time,end_time").First(&exp).Error; err != nil {
+			Select("id").First(&exp).Error; err != nil {
 			return err
 		}
-		if s.UpdatedAt.Before(exp.BeginTime) || s.UpdatedAt.After(exp.EndTime) {
-			return errors.New("不在时间区间")
-		}
+		// if s.UpdatedAt.Before(exp.BeginTime) || s.UpdatedAt.After(exp.EndTime) {
+		// 	return errors.New("不在时间区间")
+		// }
 
-		var oldURL struct {
-			OldURL string
+		var url struct {
+			SrcURL  string
+			DistURL string
 		}
 		if mid.Status {
 			global.GDB.Model(&entity.MSubmission{}).
 				Where("e_id = ? AND g_id = ?", s.EID, s.GID).
-				Select("old_url").First(&oldURL)
-			zap.S().Debug(oldURL)
+				Select("src_url,dist_url").First(&url)
+			zap.S().Debug(url)
 		}
 		// 省略一次操作
-		if oldURL.OldURL != s.URL {
+		if len(s.DistURL) != 0 && url.DistURL != s.DistURL {
 			if s.Type == entity.HTML {
-				if err := ToUnzip(s.EID, s.GID, s.URL); err != nil {
+				if err := toWorker(s.EID, s.GID, s.DistURL, toZip); err != nil {
 					return err
 				}
 			} else if s.Type == entity.EXE {
-				if err := moveExe(s.EID, s.GID, s.URL); err != nil {
+				if err := toWorker(s.EID, s.GID, s.DistURL, toExe); err != nil {
 					return err
 				}
 			}
 		}
-		s.OldURL = s.URL
+		if len(s.SrcURL) != 0 && url.SrcURL != s.SrcURL {
+			if err := toWorker(s.EID, s.GID, s.SrcURL, toSrc); err != nil {
+				return err
+			}
+		}
 		sid := entity.ShowID{
 			EID: s.EID, GID: s.GID,
 		}
 		if s.Type == entity.HTML {
-			s.URL = fmt.Sprintf("show/x/%s/index.html", sid.Encode())
+			s.URL = fmt.Sprintf("show/preview/x/%s/index.html", sid.Encode())
 		} else if s.Type == entity.EXE {
-			s.URL = fmt.Sprintf("show/x/%s/release.zip", sid.Encode())
+			s.URL = fmt.Sprintf("show/preview/x/%s/release.zip", sid.Encode())
 		}
 
 		if mid.Status {
@@ -300,7 +305,6 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 	}
 
 	res.Status = true
-	res.Recommend = sub.Recommend
 	res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
 	res.Name = sub.Name
 	res.Info = sub.Info
@@ -308,7 +312,11 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 	res.URL = sub.URL
 	res.Readme = sub.Readme
 	res.Thumbnail = sub.Thumbnail
-
+	sid := entity.ShowID{
+		EID: eid,
+		GID: mid.GID,
+	}
+	res.ShowID = sid.Encode()
 	return nil
 }
 
@@ -354,10 +362,13 @@ func GetAllSubmission(eid uint, uid string) ([]*entity.SubmissionResp, error) {
 				First(&sub).Error; err != nil {
 				return res, err
 			}
-			res.Recommend = sub.Recommend
 			res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
 		}
-
+		sid := entity.ShowID{
+			EID: eid,
+			GID: mid.GID,
+		}
+		res.ShowID = sid.Encode()
 		return res, nil
 	}
 
@@ -371,27 +382,6 @@ func GetAllSubmission(eid uint, uid string) ([]*entity.SubmissionResp, error) {
 		}
 	}
 	return res, nil
-}
-
-func Reccommend(eid uint, uid, tid string) error {
-	exp, err := GetMExp(eid)
-	if err != nil {
-		return err
-	}
-	if !checkMCourseAuth(exp.CID, tid, entity.Owner) {
-		return errors.New("权限不足")
-	}
-	var mid entity.MExperimentSubmit
-	if err := global.GDB.Where("e_id = ? AND uid = ?", eid, uid).
-		First(&mid).Error; err != nil {
-		return err
-	}
-	if !mid.Status {
-		return errors.New("未提交")
-	}
-	return global.GDB.Model(&entity.MSubmission{}).
-		Where("e_id = ? AND g_id = ?", eid, mid.GID).
-		Update("recommend", gorm.Expr("ABS(recommend - 1)")).Error
 }
 
 func TeamInfo(eid uint, uid string) (string, bool, error) {

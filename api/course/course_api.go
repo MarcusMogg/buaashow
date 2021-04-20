@@ -2,11 +2,9 @@ package course
 
 import (
 	"buaashow/entity"
-	"buaashow/global"
 	"buaashow/response"
 	"buaashow/service"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -215,24 +213,22 @@ func CreateExp(c *gin.Context) {
 	}
 	var req entity.ExperimentReq
 	if err := c.ShouldBindJSON(&req); err == nil {
-		var begin, end time.Time
-		if begin, err = time.ParseInLocation(global.TimeTemplateSec, req.BeginTime, time.Local); err != nil {
-			response.FailValidate(c)
-			zap.S().Debug(err)
-			return
-		}
-		if end, err = time.ParseInLocation(global.TimeTemplateSec, req.EndTime, time.Local); err != nil {
-			response.FailValidate(c)
-			zap.S().Debug(err)
-			return
-		}
+		//var begin, end time.Time
+		//if begin, err = time.ParseInLocation(global.TimeTemplateSec, req.BeginTime, time.Local); err != nil {
+		//	response.FailValidate(c)
+		//	zap.S().Debug(err)
+		//	return
+		//}
+		//if end, err = time.ParseInLocation(global.TimeTemplateSec, req.EndTime, time.Local); err != nil {
+		//	response.FailValidate(c)
+		//	zap.S().Debug(err)
+		//	return
+		//}
 		exp := entity.MExperiment{
-			CID:       uint(cid),
-			Name:      req.Name,
-			Info:      req.Info,
-			Team:      req.Team,
-			BeginTime: begin,
-			EndTime:   end,
+			CID:  uint(cid),
+			Name: req.Name,
+			Info: req.Info,
+			Team: req.Team,
 		}
 		if err = service.CreateExp(&exp, u.Account); err != nil {
 			response.FailWithMessage(err.Error(), c)

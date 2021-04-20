@@ -9,7 +9,8 @@ type SubmissionReq struct {
 	Name      string            `json:"name"`
 	Info      string            `json:"info"`
 	Type      entity.SummitType `json:"type"`
-	URL       string            `json:"url"`
+	SrcURL    string            `json:"src_url"`
+	DistURL   string            `json:"dist_url"`
 	Readme    string            `json:"readme"`
 	Thumbnail string            `json:"thumb"`
 }

@@ -11,24 +11,24 @@ import (
 func GetSummary(params *entity.SearchParam) (int64, []*entity.SummaryResp) {
 	var res []*entity.SummaryResp
 	db := global.GDB
-	db = db.Table("m_submissions").
-		Joins("INNER JOIN m_experiments ON m_experiments.id = m_submissions.e_id").
+	db = db.Table("m_rec_submissions").
+		Joins("INNER JOIN m_experiments ON m_experiments.id = m_rec_submissions.e_id").
 		Joins("INNER JOIN m_courses ON m_courses.id = m_experiments.c_id").
-		Joins("INNER JOIN m_users ON m_users.account = m_submissions.g_id").
+		Joins("INNER JOIN m_users ON m_users.account = m_rec_submissions.g_id").
 		Joins("INNER JOIN m_course_names ON m_courses.c_id = m_course_names.id")
 	zap.S().Debug(db.Statement.SQL.String())
 	//Where("m_submissions.show = true")
 	if params.NameID != 0 {
 		db = db.Where("m_courses.c_id = ?", params.NameID)
 	}
-	if len(params.Recommend) != 0 {
-		db = db.Where("m_submissions.recommend = ?", true)
-	}
+	//if len(params.Recommend) != 0 {
+	db = db.Where("m_rec_submissions.rec = ?", true)
+	//}
 	if params.TermID != 0 {
 		db = db.Where("m_courses.t_id = ?", params.TermID)
 	}
 	if len(params.Title) != 0 {
-		db = db.Where("m_submissions.name LIKE ? ", fmt.Sprintf("%%%s%%", params.Title))
+		db = db.Where("m_rec_submissions.name LIKE ? ", fmt.Sprintf("%%%s%%", params.Title))
 	}
 	if params.PageNum <= 0 {
 		params.PageNum = 1
@@ -40,13 +40,13 @@ func GetSummary(params *entity.SearchParam) (int64, []*entity.SummaryResp) {
 	offset := (params.PageNum - 1) * params.PageSize
 	db.Count(&tot)
 	db.Select(`m_course_names.name as course_name,
-		m_submissions.e_id,
-		m_submissions.g_id,
+		m_rec_submissions.e_id,
+		m_rec_submissions.g_id,
 		m_users.name as user_name,
-		m_submissions.name,
-		m_submissions.info,
-		m_submissions.type,
-		m_submissions.thumbnail`).
+		m_rec_submissions.name,
+		m_rec_submissions.info,
+		m_rec_submissions.type,
+		m_rec_submissions.thumbnail`).
 		Offset(offset).Limit(params.PageSize).Scan(&res)
 
 	//db.Scan(&res)
