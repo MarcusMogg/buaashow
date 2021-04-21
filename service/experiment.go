@@ -186,16 +186,30 @@ func DeleteExp(eid uint, user *entity.MUser) error {
 
 // Submit 提交作业
 // only uid == gid can submit
-func Submit(s *entity.MSubmission, uid string) error {
+func Submit(s *entity.MSubmission, uid string, user *entity.MUser) error {
+	if user.Role == entity.Student {
+		uid = user.Account
+	} else {
+		if len(uid) == 0 {
+			return errors.New("参数错误")
+		}
+	}
 	var mid entity.MExperimentSubmit
 	var exp entity.MExperiment
+	var cid uint
+
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
+		tx.Model(&entity.MExperiment{}).Select("c_id").Where("id = ?", s.EID).Scan(&cid)
+		if user.Role != entity.Student {
+			if !checkMCourseAuth(cid, user, entity.Owner) {
+				return errors.New("权限不足")
+			}
+		}
+
 		if err := tx.Where("e_id = ? AND uid = ?", s.EID, uid).
 			First(&mid).Error; err != nil {
 			// FIXME : really need it?
 			if err == gorm.ErrRecordNotFound {
-				var cid uint
-				tx.Model(&entity.MExperiment{}).Select("c_id").Where("id = ?", s.EID).Scan(&cid)
 				if tx.Where("c_id = ? AND uid = ?", cid, uid).First(&entity.RCourseStudent{}).Error == nil {
 					mid = entity.MExperimentSubmit{
 						EID:    s.EID,

@@ -6,6 +6,8 @@ import (
 
 // SubmissionReq 提交作业时的请求
 type SubmissionReq struct {
+	// require when teacher submit
+	Account   string            `json:"account"`
 	Name      string            `json:"name"`
 	Info      string            `json:"info"`
 	Type      entity.SummitType `json:"type"`

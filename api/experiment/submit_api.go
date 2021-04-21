@@ -49,7 +49,7 @@ func SubmitExp(c *gin.Context) {
 			UpdatedAt: now,
 			Thumbnail: req.Thumbnail,
 		}
-		if err = service.Submit(&submission, u.Account); err != nil {
+		if err = service.Submit(&submission, req.Account, u); err != nil {
 			response.FailWithMessage(err.Error(), c)
 			zap.S().Debug(err)
 		} else {
@@ -85,4 +85,31 @@ func SubmitInfo(c *gin.Context) {
 		res.Status = false
 	}
 	response.OkWithData(res, c)
+}
+
+// TSubmitInfo godc
+// @Tags exp
+// @Summary 教师获取学生提交的详细信息
+// @Produce application/json
+// @Success 200 {object} entity.SubmissionResp
+// @Router /exp/{id}/stat [post]
+func TSubmitInfo(c *gin.Context) {
+	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	var req struct {
+		Account string `json:"account"`
+	}
+	if err := c.ShouldBindJSON(&req); err == nil {
+		var res entity.SubmissionResp
+		if err = service.GetSubmission(uint(eid), req.Account, &res); err != nil {
+			zap.S().Debug(err)
+			res.Status = false
+		}
+		response.OkWithData(res, c)
+	} else {
+		response.FailValidate(c)
+	}
 }

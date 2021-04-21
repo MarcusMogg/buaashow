@@ -15,6 +15,9 @@ import (
 
 // checkMCourseAuth 检查用户是否有操作table m_courses的权限
 func checkMCourseAuth(cid uint, user *entity.MUser, auth entity.CourseAuth) bool {
+	if cid == 0 {
+		return false
+	}
 	if user.Role == entity.Admin {
 		return true
 	}
