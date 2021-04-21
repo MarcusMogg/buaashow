@@ -105,7 +105,7 @@ func CreateStudents(c *gin.Context) {
 	}
 	var req studentsData
 	if err := c.ShouldBindJSON(&req); err == nil {
-		fails, err := service.CreateStudentsToCourse(req.Accounts, uint(cid), u.Account)
+		fails, err := service.CreateStudentsToCourse(req.Accounts, uint(cid), u)
 		if err != nil {
 			response.FailWithMessage(err.Error(), c)
 		} else {
@@ -230,7 +230,7 @@ func CreateExp(c *gin.Context) {
 			Info: req.Info,
 			Team: req.Team,
 		}
-		if err = service.CreateExp(&exp, u.Account); err != nil {
+		if err = service.CreateExp(&exp, u); err != nil {
 			response.FailWithMessage(err.Error(), c)
 			zap.S().Debug(err)
 			return

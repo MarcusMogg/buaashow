@@ -11,8 +11,8 @@ import (
 )
 
 // CreateExp 创建实验
-func CreateExp(e *entity.MExperiment, uid string) error {
-	if !checkMCourseAuth(e.CID, uid, entity.Owner) {
+func CreateExp(e *entity.MExperiment, user *entity.MUser) error {
+	if !checkMCourseAuth(e.CID, user, entity.Owner) {
 		return errors.New("权限不足")
 	}
 	var rs []entity.RCourseStudent
@@ -41,8 +41,8 @@ func CreateExp(e *entity.MExperiment, uid string) error {
 }
 
 // UpdateExp 修改实验
-func UpdateExp(e *entity.MExperiment, uid string) error {
-	if !checkMCourseAuth(e.CID, uid, entity.Owner) {
+func UpdateExp(e *entity.MExperiment, user *entity.MUser) error {
+	if !checkMCourseAuth(e.CID, user, entity.Owner) {
 		return errors.New("权限不足")
 	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
@@ -54,12 +54,12 @@ func UpdateExp(e *entity.MExperiment, uid string) error {
 	})
 }
 
-func AddExpFile(eid uint, uid, filename string) error {
+func AddExpFile(eid uint, user *entity.MUser, filename string) error {
 	exp, err := GetMExp(eid)
 	if err != nil {
 		return err
 	}
-	if !checkMCourseAuth(exp.CID, uid, entity.Owner) {
+	if !checkMCourseAuth(exp.CID, user, entity.Owner) {
 		return errors.New("权限不足")
 	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
@@ -71,12 +71,12 @@ func AddExpFile(eid uint, uid, filename string) error {
 	})
 }
 
-func DeleteExpFile(eid uint, uid, filename string) error {
+func DeleteExpFile(eid uint, user *entity.MUser, filename string) error {
 	exp, err := GetMExp(eid)
 	if err != nil {
 		return err
 	}
-	if !checkMCourseAuth(exp.CID, uid, entity.Owner) {
+	if !checkMCourseAuth(exp.CID, user, entity.Owner) {
 		return errors.New("权限不足")
 	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
@@ -162,12 +162,12 @@ func GetExp(eid uint) (*entity.ExperimentResponse, error) {
 }
 
 // DeleteExp 删除指定实验
-func DeleteExp(eid uint, uid string) error {
+func DeleteExp(eid uint, user *entity.MUser) error {
 	exp, err := GetMExp(eid)
 	if err != nil {
 		return err
 	}
-	if !checkMCourseAuth(exp.CID, uid, entity.Owner) {
+	if !checkMCourseAuth(exp.CID, user, entity.Owner) {
 		return errors.New("权限不足")
 	}
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
@@ -320,12 +320,12 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 	return nil
 }
 
-func GetAllSubmission(eid uint, uid string) ([]*entity.SubmissionResp, error) {
+func GetAllSubmission(eid uint, user *entity.MUser) ([]*entity.SubmissionResp, error) {
 	exp, err := GetMExp(eid)
 	if err != nil {
 		return nil, err
 	}
-	if !checkMCourseAuth(exp.CID, uid, entity.Owner) {
+	if !checkMCourseAuth(exp.CID, user, entity.Owner) {
 		return nil, errors.New("权限不足")
 	}
 

@@ -104,7 +104,7 @@ func EditExp(c *gin.Context) {
 		// exp.BeginTime = begin
 		// exp.EndTime = end
 		exp.Team = req.Team
-		if err = service.UpdateExp(exp, u.Account); err != nil {
+		if err = service.UpdateExp(exp, u); err != nil {
 			response.FailWithMessage(err.Error(), c)
 			zap.S().Debug(err)
 			return
@@ -146,7 +146,7 @@ func AddExpFile(c *gin.Context) {
 	filename := fmt.Sprintf("%d-%s", eid, file.Filename)
 	c.SaveUploadedFile(file, path.Join(global.GStaticPath, filename))
 
-	if err = service.AddExpFile(uint(eid), u.Account, filename); err == nil {
+	if err = service.AddExpFile(uint(eid), u, filename); err == nil {
 		response.Ok(c)
 	} else {
 		response.FailWithMessage(err.Error(), c)
@@ -174,7 +174,7 @@ func DeleteExpFile(c *gin.Context) {
 	}
 	filename := c.Param("filename")
 
-	if err = service.DeleteExpFile(uint(eid), u.Account, filename); err != nil {
+	if err = service.DeleteExpFile(uint(eid), u, filename); err != nil {
 		response.Ok(c)
 	} else {
 		response.FailWithMessage(err.Error(), c)
@@ -200,7 +200,7 @@ func DeleteExp(c *gin.Context) {
 		response.FailValidate(c)
 		return
 	}
-	if err = service.DeleteExp(uint(eid), u.Account); err != nil {
+	if err = service.DeleteExp(uint(eid), u); err != nil {
 		response.Ok(c)
 	} else {
 		response.FailWithMessage(err.Error(), c)
@@ -226,7 +226,7 @@ func AllSubmitInfo(c *gin.Context) {
 		response.FailValidate(c)
 		return
 	}
-	res, err := service.GetAllSubmission(uint(eid), u.Account)
+	res, err := service.GetAllSubmission(uint(eid), u)
 	if err == nil {
 		response.OkWithData(res, c)
 	} else {
@@ -311,9 +311,9 @@ func Reccommend(c *gin.Context) {
 	}
 	if err := c.ShouldBindJSON(&req); err == nil {
 		if req.Rec {
-			err = service.Reccommend(uint(eid), req.Account, u.Account)
+			err = service.Reccommend(uint(eid), req.Account, u)
 		} else {
-			err = service.Unrec(uint(eid), req.Account, u.Account)
+			err = service.Unrec(uint(eid), req.Account, u)
 		}
 		if err == nil {
 			response.Ok(c)

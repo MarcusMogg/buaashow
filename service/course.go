@@ -14,9 +14,12 @@ import (
 // table r_course_students;
 
 // checkMCourseAuth 检查用户是否有操作table m_courses的权限
-func checkMCourseAuth(cid uint, uid string, auth entity.CourseAuth) bool {
+func checkMCourseAuth(cid uint, user *entity.MUser, auth entity.CourseAuth) bool {
+	if user.Role == entity.Admin {
+		return true
+	}
 	var relation entity.RCourseStudent
-	if err := global.GDB.Where("course_id = ? and user_id = ?", cid, uid).First(&relation).Error; err != nil {
+	if err := global.GDB.Where("course_id = ? and user_id = ?", cid, user.Account).First(&relation).Error; err != nil {
 		return false
 	}
 	return relation.Auth >= auth
@@ -71,19 +74,24 @@ func CreateCourse(course *entity.MCourse, user *entity.MUser) (*entity.CourseRes
 // GetMyCourses 获取与用户相关的课程信息
 func GetMyCourses(user *entity.MUser) []*entity.CourseResp {
 	var res []*entity.CourseResp
-	global.GDB.Model(&entity.MCourse{}).
+	db := global.GDB
+	db = db.Model(&entity.MCourse{}).
 		Select(`m_courses.id,m_course_names.name,m_courses.info,m_courses.teacher,
 			m_users.name as teacher_name,
 			m_courses.t_id, 
 			m_terms.t_name,
 			date_format(m_terms.begin,'%Y-%m-%d') as begin,
 			date_format(m_terms.end,'%Y-%m-%d') as end`).
-		Joins("LEFT JOIN r_course_students ON r_course_students.course_id = m_courses.id").
 		Joins("LEFT JOIN m_terms ON m_courses.t_id = m_terms.ID").
 		Joins("LEFT JOIN m_users ON m_courses.teacher = m_users.account").
-		Joins("LEFT JOIN m_course_names ON m_courses.c_id = m_course_names.id").
-		Where("r_course_students.user_id = ?", user.Account).
-		Find(&res)
+		Joins("LEFT JOIN m_course_names ON m_courses.c_id = m_course_names.id")
+	if user.Role == entity.Admin {
+		db.Find(&res)
+	} else {
+		db.Joins("LEFT JOIN r_course_students ON r_course_students.course_id = m_courses.id").
+			Where("r_course_students.user_id = ?", user.Account).
+			Find(&res)
+	}
 	return res
 }
 
@@ -109,8 +117,8 @@ func GetCourseInfoByID(id uint) (*entity.CourseResp, error) {
 }
 
 // CreateStudentsToCourse 向课程里添加学生，如果学生账号不存在，则创建学生
-func CreateStudentsToCourse(accounts []string, cid uint, uid string) (fails []string, err error) {
-	if !checkMCourseAuth(cid, uid, entity.Manager) {
+func CreateStudentsToCourse(accounts []string, cid uint, user *entity.MUser) (fails []string, err error) {
+	if !checkMCourseAuth(cid, user, entity.Manager) {
 		err = errors.New("权限不足")
 		return
 	}
@@ -168,7 +176,7 @@ func GetStudentsInCourse(cid uint) []entity.UserInfoRes {
 
 // DeleteStudent 删除学生
 func DeleteStudent(cid uint, uid string, user *entity.MUser) error {
-	if !checkMCourseAuth(cid, user.Account, entity.Manager) {
+	if !checkMCourseAuth(cid, user, entity.Manager) {
 		return errors.New("权限不足")
 	}
 	if uid == user.Account {
@@ -191,7 +199,7 @@ func DeleteStudent(cid uint, uid string, user *entity.MUser) error {
 
 // DeleteCourse 删除课程
 func DeleteCourse(cid uint, user *entity.MUser) error {
-	if !checkMCourseAuth(cid, user.Account, entity.Owner) {
+	if !checkMCourseAuth(cid, user, entity.Owner) {
 		return errors.New("权限不足")
 	}
 

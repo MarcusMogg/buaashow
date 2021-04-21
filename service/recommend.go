@@ -28,12 +28,12 @@ func sub2rec(s *entity.MSubmission, r *entity.MRecSubmission) {
 	r.UpdatedAt = s.UpdatedAt
 }
 
-func Reccommend(eid uint, uid, tid string) error {
+func Reccommend(eid uint, uid string, teacher *entity.MUser) error {
 	exp, err := GetMExp(eid)
 	if err != nil {
 		return err
 	}
-	if !checkMCourseAuth(exp.CID, tid, entity.Owner) {
+	if !checkMCourseAuth(exp.CID, teacher, entity.Owner) {
 		return errors.New("权限不足")
 	}
 	var mid entity.MExperimentSubmit
@@ -78,12 +78,12 @@ func Reccommend(eid uint, uid, tid string) error {
 	}
 }
 
-func Unrec(eid uint, uid, tid string) error {
+func Unrec(eid uint, uid string, teacher *entity.MUser) error {
 	exp, err := GetMExp(eid)
 	if err != nil {
 		return err
 	}
-	if !checkMCourseAuth(exp.CID, tid, entity.Owner) {
+	if !checkMCourseAuth(exp.CID, teacher, entity.Owner) {
 		return errors.New("权限不足")
 	}
 	var mid entity.MExperimentSubmit
