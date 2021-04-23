@@ -25,6 +25,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		UserRouter.GET("infolist", middleware.JWTAuth(entity.Admin), GetUserInfoList)
 		UserRouter.DELETE("del/:id", middleware.JWTAuth(entity.Admin), DeleteUser)
 		UserRouter.POST("reset/:id", middleware.JWTAuth(entity.Admin), ResetUser)
+		UserRouter.GET("captcha", Captcha)
 	}
 	tr := Router.Group("test")
 	{

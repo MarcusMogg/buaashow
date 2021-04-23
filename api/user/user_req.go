@@ -2,8 +2,10 @@ package user
 
 // LoginData 账号密码登录时传入参数
 type loginData struct {
-	Account  string `form:"account" json:"account" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
+	Account   string `form:"account" json:"account" binding:"required"`
+	Password  string `form:"password" json:"password" binding:"required"`
+	CaptchaId string `json:"captchaId"`
+	PicPath   string `json:"picPath"`
 }
 
 // LoginTicketData 云平台登录时传入参数

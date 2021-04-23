@@ -11,6 +11,7 @@ require (
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-openapi/spec v0.20.3 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mojocn/base64Captcha v1.3.4 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/shirou/gopsutil v3.21.3+incompatible
 	github.com/smartystreets/goconvey v1.6.4
