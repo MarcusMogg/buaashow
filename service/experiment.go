@@ -89,10 +89,15 @@ func DeleteExpFile(eid uint, user *entity.MUser, filename string) error {
 
 func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 	var course entity.MCourse
+	var term entity.MTerm
 	var ca entity.RCourseStudent
 	var resources []string
 	var cname string
 	err := global.GDB.Where("id = ?", i.CID).First(&course).Error
+	if err != nil {
+		return nil, err
+	}
+	err = global.GDB.Where("id = ?", course.TID).First(&term).Error
 	if err != nil {
 		return nil, err
 	}
@@ -123,6 +128,8 @@ func expToResp(i *entity.MExperiment) (*entity.ExperimentResponse, error) {
 		CourseName:  cname,
 		Teacher:     ca.UserID,
 		TeacherName: teacherName,
+		TermID:      course.TID,
+		TermName:    term.TName,
 		//BeginTime:   i.BeginTime.Format(global.TimeTemplateSec),
 		//EndTime:     i.EndTime.Format(global.TimeTemplateSec),
 		Resources: resources,

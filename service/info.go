@@ -46,13 +46,17 @@ func GetSummary(params *entity.SearchParam) (int64, []*entity.SummaryResp) {
 		m_rec_submissions.name,
 		m_rec_submissions.info,
 		m_rec_submissions.type,
-		m_rec_submissions.thumbnail`).
+		m_rec_submissions.thumbnail,
+		m_courses.teacher`).
 		Offset(offset).Limit(params.PageSize).Scan(&res)
 
 	//db.Scan(&res)
 	for i := range res {
 		//zap.S().Debug(res[i])
 		res[i].URL = res[i].ShowID.Encode()
+		tid := res[i].Teacher
+		global.GDB.Model(&entity.MUser{}).
+			Where("account = ?", tid).Select("name").Scan(&res[i].Teacher)
 	}
 	return tot, res
 }

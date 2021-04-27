@@ -69,9 +69,11 @@ type ExperimentResponse struct {
 	Teacher     string `json:"teacher"`
 	TeacherName string `json:"teacher_name"`
 	// YYYY-MM-DD HH-MM-SS
-	BeginTime string `json:"begin"`
-	EndTime   string `json:"end"`
+	// BeginTime string `json:"begin"`
+	// EndTime   string `json:"end"`
 
+	TermID    uint     `json:"term_id"`
+	TermName  string   `json:"term_name"`
 	Resources []string `json:"resources"`
 }
 
