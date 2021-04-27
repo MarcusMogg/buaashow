@@ -162,6 +162,34 @@ func DeleteStudent(c *gin.Context) {
 	}
 }
 
+// DeleteStudent gdoc
+// @Tags course
+// @Summary 删除所有学生,需用户登录，当前用户有课程管理权限
+// @Produce application/json
+// @Param cid path int true "Course ID"
+// @Param uid path string true "Student Account"
+// @Success 200
+// @Router /course/{cid}/students [delete]
+func DeleteAllStudent(c *gin.Context) {
+	claim, ok := c.Get("user")
+	if !ok {
+		response.FailWithMessage("未通过jwt认证", c)
+		return
+	}
+	u := claim.(*entity.MUser)
+	cid, err := strconv.ParseUint(c.Param("cid"), 10, 0)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	err = service.DeleteAllStudents(uint(cid), u)
+	if err == nil {
+		response.Ok(c)
+	} else {
+		response.FailWithMessage(err.Error(), c)
+	}
+}
+
 // DeleteCourse gdoc
 // @Tags course
 // @Summary 删除课程,需用户登录，当前用户需要是课程创建者

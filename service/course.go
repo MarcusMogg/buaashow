@@ -182,7 +182,11 @@ func DeleteStudent(cid uint, uid string, user *entity.MUser) error {
 	if !checkMCourseAuth(cid, user, entity.Manager) {
 		return errors.New("权限不足")
 	}
-	if uid == user.Account {
+	var relation entity.RCourseStudent
+	if err := global.GDB.Where("course_id = ? and user_id = ?", cid, uid).First(&relation).Error; err != nil {
+		return errors.New("无此人")
+	}
+	if relation.Auth >= entity.Owner {
 		return errors.New("不能删除老师")
 	}
 	var eds []uint
@@ -200,18 +204,50 @@ func DeleteStudent(cid uint, uid string, user *entity.MUser) error {
 	}).Error
 }
 
+// DeleteAllStudents 清空学生
+func DeleteAllStudents(cid uint, user *entity.MUser) error {
+	if !checkMCourseAuth(cid, user, entity.Owner) {
+		return errors.New("权限不足")
+	}
+
+	var eds []uint
+	global.GDB.Model(&entity.MExperiment{}).Select("id").
+		Where("c_id = ?", cid).Scan(&eds)
+	for _, id := range eds {
+		global.GDB.Delete(&entity.MExperimentSubmit{
+			EID: id,
+		})
+	}
+	return global.GDB.Where("course_id = ? AND auth != ?", cid, entity.Owner).
+		Delete(&entity.RCourseStudent{}).Error
+}
+
 // DeleteCourse 删除课程
 func DeleteCourse(cid uint, user *entity.MUser) error {
 	if !checkMCourseAuth(cid, user, entity.Owner) {
 		return errors.New("权限不足")
 	}
-
+	var eds []uint
 	return global.GDB.Transaction(func(tx *gorm.DB) error {
 		err := tx.Delete(&entity.MCourse{
 			ID: cid,
 		}).Error
 		if err != nil {
 			return err
+		}
+		global.GDB.Model(&entity.MExperiment{}).Select("id").
+			Where("c_id = ?", cid).Scan(&eds)
+		for _, id := range eds {
+			global.GDB.Delete(&entity.MExperiment{
+				ID: id,
+			})
+			global.GDB.Delete(&entity.MExperimentSubmit{
+				EID: id,
+			})
+			// FIXME : 不删除提交
+			//global.GDB.Delete(&entity.MSubmission{
+			//	EID: id,
+			//})
 		}
 		return tx.Where("course_id = ?", cid).Delete(&entity.RCourseStudent{}).Error
 	})

@@ -19,6 +19,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		CourseRouter.GET(":id/students", GetStudents)
 		CourseRouter.POST(":id/students", middleware.JWTAuth(entity.Teacher), CreateStudents)
 		CourseRouter.DELETE(":cid/student/:uid", middleware.JWTAuth(entity.Teacher), DeleteStudent)
+		CourseRouter.DELETE(":cid/students", middleware.JWTAuth(entity.Teacher), DeleteAllStudent)
 		CourseRouter.DELETE(":cid", middleware.JWTAuth(entity.Teacher), DeleteCourse)
 	}
 

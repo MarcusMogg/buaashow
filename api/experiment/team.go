@@ -51,12 +51,19 @@ func JoinTeam(c *gin.Context) {
 	}
 	u := claim.(*entity.MUser)
 	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
-	gid := c.Param("gid")
 	if err != nil {
 		response.FailValidate(c)
 		return
 	}
-	if err := service.JoinTeam(uint(eid), u.Account, gid); err == nil {
+	var gid struct {
+		GID string `json:"gid"`
+	}
+	err = c.ShouldBindJSON(&gid)
+	if err != nil {
+		response.FailValidate(c)
+		return
+	}
+	if err := service.JoinTeam(uint(eid), u.Account, gid.GID); err == nil {
 		response.Ok(c)
 	} else {
 		zap.S().Debug(err)
@@ -77,16 +84,33 @@ func QuitTeam(c *gin.Context) {
 	}
 	u := claim.(*entity.MUser)
 	eid, err := strconv.ParseUint(c.Param("id"), 10, 0)
-	gid := c.Param("gid")
 	if err != nil {
 		response.FailValidate(c)
 		return
 	}
-	if gid == u.Account {
-		response.FailWithMessage("you are leader", c)
+	var gid struct {
+		GID string `json:"gid"`
+		Tar string `json:"account"`
+	}
+	err = c.ShouldBindJSON(&gid)
+	if err != nil {
+		response.FailValidate(c)
 		return
 	}
-	if err := service.QiutTeam(uint(eid), u.Account, gid); err == nil {
+	if gid.GID == u.Account { // for leader
+		if len(gid.Tar) == 0 || gid.Tar == gid.GID {
+			response.FailWithMessage("队长不能删除", c)
+			return
+		}
+		err = service.QiutTeam(uint(eid), gid.Tar, gid.GID)
+	} else { // for quit team
+		if len(gid.Tar) != 0 || gid.Tar == u.Account {
+			response.FailWithMessage("队员不能删除其他人", c)
+			return
+		}
+		err = service.QiutTeam(uint(eid), u.Account, gid.GID)
+	}
+	if err == nil {
 		response.Ok(c)
 	} else {
 		zap.S().Debug(err)

@@ -10,8 +10,8 @@ import (
 
 var store = base64Captcha.DefaultMemStore
 
-const imgH = 240
-const imgW = 80
+const imgH = 80
+const imgW = 240
 const keyLen = 6
 
 type captchaResponse struct {
