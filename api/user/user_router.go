@@ -29,7 +29,8 @@ func InitRouter(Router *gin.RouterGroup) {
 	}
 	tr := Router.Group("test")
 	{
-		tr.POST("admin", middleware.JWTAuth(entity.Admin), TestAdmin)
+		tr.POST("admin", middleware.JWTAuth(entity.Admin), TestUser)
+		tr.POST("teacher", middleware.JWTAuth(entity.Teacher), TestUser)
 		tr.POST("user", middleware.JWTAuth(entity.Student), TestUser)
 	}
 }

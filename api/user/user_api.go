@@ -284,14 +284,6 @@ func ResetUser(c *gin.Context) {
 	}
 }
 
-// TestAdmin gdoc
-// @Tags User
-// @Summary 测试管理员token
-// @Router /test/admin [post]
-func TestAdmin(c *gin.Context) {
-	response.Ok(c)
-}
-
 // TestUser gdoc
 // @Tags User
 // @Summary 测试用户token
