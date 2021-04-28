@@ -22,11 +22,11 @@ type RExperimentResource struct {
 // only GID == UID,
 // can modify the group member and modify the submission
 type MExperimentSubmit struct {
-	EID       uint   `gorm:"primarykey"`
-	UID       string `gorm:"primarykey"`
-	GID       string
-	Status    bool
-	UpdatedAt time.Time
+	EID    uint   `gorm:"primarykey"`
+	UID    string `gorm:"primarykey"`
+	GID    string
+	Status bool
+	UpAt   time.Time
 }
 
 // SummitType 允许提交的作品类型
@@ -53,7 +53,7 @@ type MSubmission struct {
 	SrcURL    string
 	Thumbnail string
 	Readme    string
-	UpdatedAt time.Time
+	UpAt      time.Time
 }
 
 // ExperimentResponse 完整的实验信息
@@ -94,7 +94,7 @@ type SubmissionResp struct {
 	StudentID string            `json:"uid"`
 	GID       string            `json:"gid"`
 	Groups    []*UserInfoSimple `json:"groups"`
-	UpdatedAt string            `json:"time"`
+	UpAt      string            `json:"time"`
 	RecAt     string            `json:"rec_time"`
 	Name      string            `json:"name"`
 	Info      string            `json:"info"`

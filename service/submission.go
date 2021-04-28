@@ -292,7 +292,7 @@ func DownloadSubmission(eid uint, uid string) (string, error) {
 
 	outfile, err := os.Stat(outName)
 	if err == nil {
-		if outfile.ModTime().After(mid.UpdatedAt) {
+		if outfile.ModTime().After(mid.UpAt) {
 			return outName, nil
 		}
 	}
@@ -313,8 +313,8 @@ func DownloadAllSubmission(eid uint) (string, error) {
 	if err == nil {
 		var up time.Time
 		err = global.GDB.Model(&entity.MExperimentSubmit{}).
-			Select("updated_at").
-			Order("updated_at").
+			Select("up_at").
+			Order("up_at").
 			Limit(1).Find(&up).Error
 		if err == nil && outfile.ModTime().After(up) {
 			return outName, nil

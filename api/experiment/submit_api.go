@@ -46,7 +46,7 @@ func SubmitExp(c *gin.Context) {
 			SrcURL:    req.SrcURL,
 			DistURL:   req.DistURL,
 			Readme:    req.Readme,
-			UpdatedAt: now,
+			UpAt:      now,
 			Thumbnail: req.Thumbnail,
 		}
 		if err = service.Submit(&submission, req.Account, u); err != nil {

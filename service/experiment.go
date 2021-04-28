@@ -244,7 +244,7 @@ func Submit(s *entity.MSubmission, uid string, user *entity.MUser) error {
 			Select("id").First(&exp).Error; err != nil {
 			return err
 		}
-		// if s.UpdatedAt.Before(exp.BeginTime) || s.UpdatedAt.After(exp.EndTime) {
+		// if s.UpAt.Before(exp.BeginTime) || s.UpAt.After(exp.EndTime) {
 		// 	return errors.New("不在时间区间")
 		// }
 
@@ -291,7 +291,7 @@ func Submit(s *entity.MSubmission, uid string, user *entity.MUser) error {
 			return err
 		}
 		mid.Status = true
-		mid.UpdatedAt = s.UpdatedAt
+		mid.UpAt = s.UpAt
 		return tx.Save(&mid).Error
 	})
 }
@@ -326,7 +326,7 @@ func GetSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 	}
 
 	res.Status = true
-	res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
+	res.UpAt = sub.UpAt.Format(global.TimeTemplateSec)
 	res.Name = sub.Name
 	res.Info = sub.Info
 	res.Type = int(sub.Type)
@@ -380,17 +380,17 @@ func GetAllSubmission(eid uint, user *entity.MUser) ([]*entity.SubmissionResp, e
 		if mid.Status {
 			var sub entity.MSubmission
 			if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
-				Select("updated_at").
+				Select("up_at").
 				First(&sub).Error; err != nil {
 				return res, err
 			}
-			res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
+			res.UpAt = sub.UpAt.Format(global.TimeTemplateSec)
 
 			var rec entity.MRecSubmission
 			if err := global.GDB.Where("e_id = ? AND g_id = ? AND rec = ?", eid, mid.GID, true).
-				Select("updated_at").
+				Select("up_at").
 				First(&rec).Error; err == nil {
-				res.RecAt = rec.UpdatedAt.Format(global.TimeTemplateSec)
+				res.RecAt = rec.UpAt.Format(global.TimeTemplateSec)
 			}
 		}
 		sid := entity.ShowID{

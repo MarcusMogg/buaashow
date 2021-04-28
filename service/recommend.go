@@ -25,7 +25,7 @@ func sub2rec(s *entity.MSubmission, r *entity.MRecSubmission) {
 	}
 	r.Thumbnail = s.Thumbnail
 	r.Readme = s.Readme
-	r.UpdatedAt = s.UpdatedAt
+	r.UpAt = s.UpAt
 }
 
 func Reccommend(eid uint, uid string, teacher *entity.MUser) error {
@@ -62,7 +62,7 @@ func Reccommend(eid uint, uid string, teacher *entity.MUser) error {
 			return err
 		}
 		return global.GDB.Create(&rec).Error
-	} else if sub.UpdatedAt.After(rec.UpdatedAt) {
+	} else if sub.UpAt.After(rec.UpAt) {
 		rec.Rec = true
 		os.RemoveAll(dist)
 		if err = CopyDir(src, dist); err != nil {
@@ -143,7 +143,7 @@ func GetRecSubmission(eid uint, uid string, res *entity.SubmissionResp) error {
 	}
 
 	res.Status = true
-	res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
+	res.UpAt = sub.UpAt.Format(global.TimeTemplateSec)
 	res.Name = sub.Name
 	res.Info = sub.Info
 	res.Type = int(sub.Type)

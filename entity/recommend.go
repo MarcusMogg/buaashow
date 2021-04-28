@@ -13,5 +13,5 @@ type MRecSubmission struct {
 	Thumbnail string
 	Readme    string
 	Rec       bool
-	UpdatedAt time.Time
+	UpAt      time.Time
 }
