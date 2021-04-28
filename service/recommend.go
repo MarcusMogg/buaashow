@@ -68,7 +68,7 @@ func Reccommend(eid uint, uid string, teacher *entity.MUser) error {
 		if err = CopyDir(src, dist); err != nil {
 			return err
 		}
-		rec.Rec = true
+		sub2rec(&sub, &rec)
 		return global.GDB.Save(&rec).Error
 	} else {
 		// FIXME: if file has been deleted?
