@@ -5,6 +5,7 @@ import (
 	"buaashow/global"
 	"errors"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -32,6 +33,7 @@ func CreateExp(e *entity.MExperiment, user *entity.MUser) error {
 				UID:    i.UserID,
 				GID:    i.UserID,
 				Status: false,
+				UpAt:   time.Now(),
 			}).Error; err != nil {
 				return err
 			}
@@ -223,6 +225,7 @@ func Submit(s *entity.MSubmission, uid string, user *entity.MUser) error {
 						UID:    uid,
 						GID:    uid,
 						Status: false,
+						UpAt:   time.Now(),
 					}
 					err := tx.Create(&mid).Error
 					if err != nil {
