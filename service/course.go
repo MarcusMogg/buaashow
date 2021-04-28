@@ -197,6 +197,10 @@ func DeleteStudent(cid uint, uid string, user *entity.MUser) error {
 			EID: id,
 			UID: uid,
 		})
+		global.GDB.Delete(&entity.MSubmission{
+			EID: id,
+			GID: uid,
+		})
 	}
 	return global.GDB.Delete(&entity.RCourseStudent{
 		CourseID: cid,
@@ -215,6 +219,9 @@ func DeleteAllStudents(cid uint, user *entity.MUser) error {
 		Where("c_id = ?", cid).Scan(&eds)
 	for _, id := range eds {
 		global.GDB.Delete(&entity.MExperimentSubmit{
+			EID: id,
+		})
+		global.GDB.Delete(&entity.MSubmission{
 			EID: id,
 		})
 	}
@@ -244,10 +251,9 @@ func DeleteCourse(cid uint, user *entity.MUser) error {
 			global.GDB.Delete(&entity.MExperimentSubmit{
 				EID: id,
 			})
-			// FIXME : 不删除提交
-			//global.GDB.Delete(&entity.MSubmission{
-			//	EID: id,
-			//})
+			global.GDB.Delete(&entity.MSubmission{
+				EID: id,
+			})
 		}
 		return tx.Where("course_id = ?", cid).Delete(&entity.RCourseStudent{}).Error
 	})
