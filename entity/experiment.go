@@ -89,8 +89,8 @@ type ExperimentReq struct {
 
 // SubmissionResp 作业信息
 type SubmissionResp struct {
-	Status    bool              `json:"status"`
-	Recommend bool              `json:"rec"`
+	Status bool `json:"status"`
+	//Recommend bool              `json:"rec"`
 	StudentID string            `json:"uid"`
 	GID       string            `json:"gid"`
 	Groups    []*UserInfoSimple `json:"groups"`
