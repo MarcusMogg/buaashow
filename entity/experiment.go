@@ -95,6 +95,7 @@ type SubmissionResp struct {
 	GID       string            `json:"gid"`
 	Groups    []*UserInfoSimple `json:"groups"`
 	UpdatedAt string            `json:"time"`
+	RecAt     string            `json:"rec_time"`
 	Name      string            `json:"name"`
 	Info      string            `json:"info"`
 	Type      int               `json:"type"`

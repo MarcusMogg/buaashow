@@ -380,10 +380,18 @@ func GetAllSubmission(eid uint, user *entity.MUser) ([]*entity.SubmissionResp, e
 		if mid.Status {
 			var sub entity.MSubmission
 			if err := global.GDB.Where("e_id = ? AND g_id = ?", eid, mid.GID).
+				Select("updated_at").
 				First(&sub).Error; err != nil {
 				return res, err
 			}
 			res.UpdatedAt = sub.UpdatedAt.Format(global.TimeTemplateSec)
+
+			var rec entity.MRecSubmission
+			if err := global.GDB.Where("e_id = ? AND g_id = ? AND rec = ?", eid, mid.GID, true).
+				Select("updated_at").
+				First(&rec).Error; err == nil {
+				res.RecAt = rec.UpdatedAt.Format(global.TimeTemplateSec)
+			}
 		}
 		sid := entity.ShowID{
 			EID: eid,
