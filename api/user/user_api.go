@@ -21,10 +21,10 @@ import (
 func LoginByPwd(c *gin.Context) {
 	var r loginData
 	if err := c.ShouldBindJSON(&r); err == nil {
-		// if !store.Verify(r.CaptchaId, r.PicPath, false) {
-		// 	response.FailWithMessage("验证码错误", c)
-		// 	return
-		// }
+		if gin.Mode() == gin.ReleaseMode && !store.Verify(r.CaptchaId, r.PicPath, false) {
+			response.FailWithMessage("验证码错误", c)
+			return
+		}
 		user := &entity.MUser{Account: r.Account, Password: r.Password}
 		if service.Login(user) {
 			tokenNext(c, user)

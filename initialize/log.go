@@ -1,19 +1,38 @@
 package initialize
 
 import (
-	"fmt"
-
+	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-func loggerInit() {
-	/*cfg := zap.NewDevelopmentConfig()
-	logfile := fmt.Sprintf("./logfiles/%s.log", time.Now().Format(global.TimeTemplateSec))
-	cfg.OutputPaths = []string{"stderr", logfile}
-	logger, err := cfg.Build(zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))*/
-	logger, err := zap.NewDevelopment(zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
-	if err != nil {
-		panic(fmt.Errorf("fatal error logger: %s", err.Error()))
+func setCore(filename string, level zapcore.Level) (core zapcore.Core) {
+	// Encoder
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	encoder := zapcore.NewConsoleEncoder(encoderConfig)
+
+	// WriteSyncer
+	lumberJackLogger := &lumberjack.Logger{
+		Filename: filename,
+		MaxSize:  10,
+		Compress: false,
 	}
+	writeSyncer := zapcore.AddSync(lumberJackLogger)
+
+	// LevelEnabler
+	levelEnabler := zap.LevelEnablerFunc(func(lv zapcore.Level) bool {
+		return lv >= level
+	})
+
+	// set core
+	core = zapcore.NewCore(encoder, writeSyncer, levelEnabler)
+	return
+}
+
+func loggerInit() {
+	core := setCore("logs/xx.log", zap.DebugLevel)
+	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
 	zap.ReplaceGlobals(logger)
 }

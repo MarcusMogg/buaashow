@@ -16,7 +16,8 @@ import (
 
 // Router 初始化路由列表
 func Router() *gin.Engine {
-	var Router = gin.Default()
+	var Router = gin.New()
+	Router.Use(middleware.Logger(), gin.Recovery())
 	// 设置multipart forms最大内存限制 4MB
 	Router.MaxMultipartMemory = 4 << 20
 
