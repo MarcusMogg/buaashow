@@ -15,9 +15,9 @@ func addToZip(zw *zip.Writer, path, old, new string, fi os.FileInfo) error {
 		return err
 	}
 	// 替换文件信息中的文件名
-	fh.Name = strings.TrimPrefix(path, string(filepath.Separator))
+	// fh.Name = strings.TrimPrefix(path, string(filepath.Separator))
 	if len(old) != 0 {
-		fh.Name = strings.Replace(fh.Name, old, new, 1)
+		fh.Name = strings.Replace(path, old, new, 1)
 	}
 	fh.Method = zip.Deflate
 
