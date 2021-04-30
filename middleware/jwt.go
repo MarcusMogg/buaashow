@@ -65,9 +65,15 @@ func (j *JWT) ParseToken(tokenString string) (*JWTClaim, error) {
 }
 
 // JWTAuth 身份验证中间件
-func JWTAuth(minRole entity.Role) gin.HandlerFunc {
+func JWTAuth(minRole entity.Role, useCookie bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.Request.Header.Get("Authorization")
+		var token string
+		if useCookie {
+			token, _ = c.Cookie("Token")
+		} else {
+			token = c.Request.Header.Get("Authorization")
+		}
+
 		jwt := NewJWT()
 		claim, err := jwt.ParseToken(token)
 		if err != nil {

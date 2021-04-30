@@ -16,7 +16,7 @@ func InitRouter(Router *gin.RouterGroup) {
 		sr.GET("readme/:showid", Readme)
 		sr.GET("x/:showid/*filepath", Show())
 
-		sr.GET("preview/readme/:showid", middleware.JWTAuth(entity.Student), PreReadme)
-		sr.GET("preview/x/:showid/*filepath", middleware.JWTAuth(entity.Student), Preview())
+		sr.GET("preview/readme/:showid", middleware.JWTAuth(entity.Student, false), PreReadme)
+		sr.GET("preview/x/:showid/*filepath", middleware.JWTAuth(entity.Student, true), Preview())
 	}
 }
