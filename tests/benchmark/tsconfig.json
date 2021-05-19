@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es6",
+        "noImplicitAny": false,
+        "sourceMap": false,
+        "rootDir": "./ts",
+        "outDir": "./build",
+        "watch": true
+    },
+    "include": [
+        "./ts/**/*"
+    ],
+    "exclude": [
+        "views",
+        "./static/*"
+    ]
+}

@@ -1,0 +1,36 @@
+Running 30s test @ http://10.251.253.71/api/file
+  1 threads and 1 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     0.00us    0.00us   0.00us    -nan%
+    Req/Sec     0.00      0.00     0.00    100.00%
+  Latency Distribution
+     50%    0.00us
+     75%    0.00us
+     90%    0.00us
+     99%    0.00us
+  3 requests in 30.06s, 732.00B read
+  Socket errors: connect 0, read 0, write 0, timeout 3
+Requests/sec:      0.10
+Transfer/sec:      24.35B
+JSON: {
+"summary":{
+"duration":30059756,
+"requests":3,
+"bytes":732,
+"errors":{"connect":0,"read":0,"write":0,"status":0,"timeout":3}
+},
+"latency":{
+"min":1.84467e+19,
+"mean":0,
+"max":0,
+"stdev":0,
+"percentile":[[1,0],[5,0],[10,0],[25,0],[50,0],[75,0],[90,0],[95,0],[99,0]]
+},
+"requests":{
+"min":0,
+"mean":0,
+"max":0,
+"stdev":0,
+"percentile":[[1,0],[5,0],[10,0],[25,0],[50,0],[75,0],[90,0],[95,0],[99,0]]
+}
+}

@@ -4,3 +4,5 @@ resources
 main
 *.sql
 logs
+node_modules
+build

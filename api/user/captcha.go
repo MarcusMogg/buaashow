@@ -17,6 +17,7 @@ const keyLen = 6
 type captchaResponse struct {
 	CaptchaId string `json:"captchaId"`
 	PicPath   string `json:"picPath"`
+	//Data      string `json:"d"` // only for test
 }
 
 // @Tags User
@@ -36,6 +37,7 @@ func Captcha(c *gin.Context) {
 		response.OkDetailed(captchaResponse{
 			CaptchaId: id,
 			PicPath:   b64s,
+			//Data:      store.Get(id, false),
 		}, "验证码获取成功", c)
 	}
 }

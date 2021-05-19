@@ -4,8 +4,6 @@ import (
 	"buaashow/entity"
 	"buaashow/global"
 	"fmt"
-
-	"go.uber.org/zap"
 )
 
 func GetSummary(params *entity.SearchParam) (int64, []*entity.SummaryResp) {
@@ -16,7 +14,6 @@ func GetSummary(params *entity.SearchParam) (int64, []*entity.SummaryResp) {
 		Joins("INNER JOIN m_courses ON m_courses.id = m_experiments.c_id").
 		Joins("INNER JOIN m_users ON m_users.account = m_rec_submissions.g_id").
 		Joins("INNER JOIN m_course_names ON m_courses.c_id = m_course_names.id")
-	zap.S().Debug(db.Statement.SQL.String())
 	//Where("m_submissions.show = true")
 	if params.NameID != 0 {
 		db = db.Where("m_courses.c_id = ?", params.NameID)
