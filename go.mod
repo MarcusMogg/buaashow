@@ -23,6 +23,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	go.uber.org/zap v1.10.0
 	golang.org/x/net v0.0.0-20210220033124-5f55cee0dc0d // indirect
+	golang.org/x/text v0.3.5
 	golang.org/x/tools v0.1.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gorm.io/driver/mysql v1.0.1
