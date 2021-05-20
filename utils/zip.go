@@ -2,10 +2,15 @@ package utils
 
 import (
 	"archive/zip"
+	"bytes"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 )
 
 func addToZip(zw *zip.Writer, path, old, new string, fi os.FileInfo) error {
@@ -74,6 +79,13 @@ func ZipFiles(outName string, fileNames, olds, news []string) error {
 
 func unzipFile(dst string, file *zip.File) error {
 	path := filepath.Join(dst, file.Name)
+
+	if file.Flags == 0 {
+		i := bytes.NewReader([]byte(file.Name))
+		decoder := transform.NewReader(i, simplifiedchinese.GB18030.NewDecoder())
+		content, _ := ioutil.ReadAll(decoder)
+		path = filepath.Join(dst, string(content))
+	}
 
 	// 如果是目录，就创建目录
 	if file.FileInfo().IsDir() {

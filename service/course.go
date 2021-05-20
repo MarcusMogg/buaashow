@@ -5,10 +5,21 @@ import (
 	"buaashow/global"
 	"buaashow/utils"
 	"errors"
+	"math/rand"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,+-*/!@#$%^&123456")
+
+func randStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
 
 // table m_courses;
 // table r_course_students;
@@ -129,7 +140,7 @@ func CreateStudentsToCourse(accounts []string, cid uint, user *entity.MUser) (fa
 	global.GDB.Model(&entity.MExperiment{}).Select("id").
 		Where("c_id = ?", cid).Scan(&eds)
 	fails = make([]string, 0)
-	basePwd := utils.AesEncrypt("666666")
+	basePwd := utils.AesEncrypt(randStringRunes(10))
 	for i := range accounts {
 		err = global.GDB.Transaction(func(tx *gorm.DB) error {
 			var user entity.MUser
