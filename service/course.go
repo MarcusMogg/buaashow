@@ -141,6 +141,7 @@ func CreateStudentsToCourse(accounts []string, cid uint, user *entity.MUser) (fa
 		Where("c_id = ?", cid).Scan(&eds)
 	fails = make([]string, 0)
 	basePwd := utils.AesEncrypt(randStringRunes(10))
+	// basePwd := utils.AesEncrypt("666666")
 	for i := range accounts {
 		err = global.GDB.Transaction(func(tx *gorm.DB) error {
 			var user entity.MUser

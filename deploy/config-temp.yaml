@@ -1,0 +1,18 @@
+aeskey : "sadasdasdsxcsa42" # 长度必须为16, 24或者32
+jwtkey : "sfsrwewcweafa,sf" # 长度必须为16, 24或者32
+port : 22222
+mysql:
+    username: root
+    password: 'rott@123'
+    path: '127.0.0.1:3306'
+    dbname: 'buaashow'
+    parm: 'charset=utf8&parseTime=True&loc=Local'
+
+# 云平台登录验证接口
+sso: 'https://cloud.beihangsoft.cn/api/security/tokenVerify'
+# 初始化管理员账号和密码
+admin:
+    username: 'admin'
+    password: '123456'
+# 上传文件存放路径
+static: "./resources/"
