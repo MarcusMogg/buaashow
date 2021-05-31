@@ -6,6 +6,7 @@ import (
 	"buaashow/utils"
 	"errors"
 	"math/rand"
+	"time"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -142,6 +143,7 @@ func CreateStudentsToCourse(accounts []string, cid uint, user *entity.MUser) (fa
 	fails = make([]string, 0)
 	basePwd := utils.AesEncrypt(randStringRunes(10))
 	// basePwd := utils.AesEncrypt("666666")
+	var t = time.Now()
 	for i := range accounts {
 		err = global.GDB.Transaction(func(tx *gorm.DB) error {
 			var user entity.MUser
@@ -160,6 +162,7 @@ func CreateStudentsToCourse(accounts []string, cid uint, user *entity.MUser) (fa
 					UID:    accounts[i],
 					GID:    accounts[i],
 					Status: false,
+					UpAt:   t,
 				})
 			}
 			return tx.Create(&entity.RCourseStudent{

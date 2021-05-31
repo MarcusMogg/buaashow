@@ -42,6 +42,7 @@ docker exec -it ${CONTAINER ID} /bin/sh
 
 ```shell
 docker run -v /hostTest:/conainterTest 
+docker run -d -p 8080:80  --mount type=bind,source=/home/buaa/resources,target=/resources --name buaashow-v1 buaashow:1.0
 ```
 
 同时修改配置文件的`static`选项
