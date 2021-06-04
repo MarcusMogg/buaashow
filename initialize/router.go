@@ -23,7 +23,7 @@ func Router() *gin.Engine {
 
 	APIGroup := Router.Group("")
 
-	Router.Use(middleware.Cors()) // 跨域
+	APIGroup.Use(middleware.Cors()) // 跨域
 
 	user.InitRouter(APIGroup)
 	course.InitRouter(APIGroup)
